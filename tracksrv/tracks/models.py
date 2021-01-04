@@ -1,4 +1,5 @@
-import datetime
+#import datetime
+from django.utils import timezone
 from django.db import models
 
 # Create your models here.
@@ -56,10 +57,8 @@ CREATE TABLE "public"."vessels" (
 """
 
 class Vessel(models.Model):
-    def now():
-        return datetime.today()
     name = models.CharField('the vessel name',max_length=128)
-    created_on = models.DateTimeField('date created in database',default=now)
+    created_on = models.DateTimeField('date created in database',default=timezone.now)
     length = models.FloatField('length in meters')
     beam = models.FloatField('beam in meters')
     draft = models.FloatField('draft in meters')
@@ -89,22 +88,17 @@ CREATE TABLE "public"."users" (
 """
 
 class User(models.Model):
-    def now():
-        return datetime.today()
-
     first_name = models.CharField(max_length=32)
     last_name = models.CharField(max_length=32)
-    created_on = models.DateTimeField(default=now)
+    created_on = models.DateTimeField(default=timezone.now)
+    def __str__(self):
+        return self.first_name + " " + self.last_name
 
-def now():
-    return datetime.today()
 class Track(models.Model):
-
     vessel = models.ForeignKey(Vessel, on_delete=models.CASCADE)
     submitter = models.ForeignKey(User, on_delete=models.CASCADE)
-    uploaded_on = models.DateTimeField('date uploaded',default=now)
+    uploaded_on = models.DateTimeField('date uploaded',default=timezone.now)
     processing_status = models.ForeignKey(ProcessingStatus, null=True, on_delete=models.SET_NULL)
     rawfile = models.FileField(upload_to='raw_tracks/')
     note = models.CharField('optional uploaders\' note',max_length=200)
     quality = models.IntegerField('a track quality measure from 0 (unusable) to 100 (perfect)',default=0)
-
