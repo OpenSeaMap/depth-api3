@@ -56,9 +56,9 @@ class Track(models.Model):
     vessel = models.ForeignKey(Vessel, on_delete=models.CASCADE)
     submitter = models.ForeignKey(User, on_delete=models.CASCADE)
     uploaded_on = models.DateTimeField('date uploaded',default=timezone.now)
-    processing_status = models.CharField(max_length=3, null=True, choices=ProcessingStatus.choices)
+    processing_status = models.CharField(max_length=3, null=True, choices=ProcessingStatus.choices, default=ProcessingStatus.NEW)
     rawfile = models.FileField(upload_to='raw_tracks/')
-    note = models.CharField('optional uploaders\' note',max_length=200)
-    quality = models.IntegerField('a track quality measure from 0 (unusable) to 100 (perfect)',default=0)
+    note = models.CharField('optional uploaders\' note',max_length=200,null=True)
+    quality = models.IntegerField('a track quality measure from 0 (unusable) to 100 (perfect)', null=True)
     def __str__(self):
         return '[%d] (%s %s, submitted by %s on %s)' % (self.id,Vessel.VesselType(self.vessel.vtype).label,self.vessel.name,str(self.submitter),self.uploaded_on)
