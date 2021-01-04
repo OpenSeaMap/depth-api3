@@ -6,8 +6,8 @@ from django.core.paginator import Paginator
 from .models import Track
 
 def index(request):
-    page=request.GET.get('page',default=1) # XXX use next/prev style navigation
-    limit=request.GET.get('limit',default=50)
+    page = request.GET.get('page',default=1) # XXX use next/prev style navigation
+    limit = request.GET.get('limit',default=50)
     paginator = Paginator(Track.objects.order_by('-uploaded_on'),per_page=limit)
 
     trackList = [{'id':t.id,'uploaded_on':t.uploaded_on} for t in paginator.get_page(page)]
