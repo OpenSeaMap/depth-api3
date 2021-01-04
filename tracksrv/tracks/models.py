@@ -4,57 +4,15 @@ from django.db import models
 
 # Create your models here.
 
-"""
-CREATE TABLE "public"."tracks" (
-    "id" integer DEFAULT nextval('tracks_id_seq') PRIMARY KEY,
-    "vessel_id" integer NOT NULL,
-    "submitter_id" integer NOT NULL,
-    "created_on" timestamp NOT NULL,
-    "processing_status" processing_status NOT NULL,
-    "rawfile" integer NOT NULL,
-    "note" character varying(128),
-    "quality" smallint,
-    CONSTRAINT "tracks_submitter_id_fkey" FOREIGN KEY (submitter_id) REFERENCES users(id)  ON DELETE CASCADE NOT DEFERRABLE,
-    CONSTRAINT "tracks_vessel_id_fkey" FOREIGN KEY (vessel_id) REFERENCES vessels(id)  ON DELETE CASCADE NOT DEFERRABLE
-) WITH (oids = false);
-"""
-
 class ProcessingStatus(models.Model):
     status = models.CharField('processing machine state', max_length=16)
     def __str__(self):
         return self.status
 
-ProcessingStatus.objects.create(status='new')
-ProcessingStatus.objects.create(status='ingesting')
-ProcessingStatus.objects.create(status='done')
+#ProcessingStatus.objects.create(status='new')
+#ProcessingStatus.objects.create(status='ingesting')
+#ProcessingStatus.objects.create(status='done')
 
-"""
-CREATE TABLE "public"."vessels" (
-    "id" integer DEFAULT nextval('vessels_id_seq') PRIMARY KEY,
-    "name" character varying(50),
-    "created_on" timestamp NOT NULL,
-    "length" real NOT NULL,
-    "beam" real NOT NULL,
-    "draft" real NOT NULL,
-    "displacement" real NOT NULL,
-    "manufacturer" character varying(50) NOT NULL,
-    "model" character varying(50) NOT NULL,
-    "type" character varying(30) NOT NULL,
-    "depth_sensor_offs_x" real NOT NULL,
-    "depth_sensor_offs_y" real NOT NULL,
-    "depth_sensor_offs_z" real NOT NULL,
-    "measurement_type" character(20) NOT NULL,
-    "depth_sensor_offset_keel" smallint NOT NULL,
-    "depth_sensor_manufacturer" character varying(30) NOT NULL,
-    "depth_sensor_model" character(20) NOT NULL,
-    "gps_sensor_offs_x" real NOT NULL,
-    "gps_sensor_offs_y" real NOT NULL,
-    "gps_sensor_offs_z" real NOT NULL,
-    "gps_sensor_manufacturer" character varying(30) NOT NULL,
-    "gps_sensor_model" character(1) NOT NULL,
-    CONSTRAINT "vessels_id_key" UNIQUE ("id")
-) WITH (oids = false);
-"""
 
 class Vessel(models.Model):
     name = models.CharField('the vessel name',max_length=128)
@@ -77,22 +35,14 @@ class Vessel(models.Model):
 #    depth_sensor_manufacturer = models.CharField(max_length=32)
 #    depth_sensor_model = models.CharField(max_length=20)
 
-"""
-CREATE TABLE "public"."users" (
-    "id" integer DEFAULT nextval('users_id_seq') PRIMARY KEY,
-    "first_name" character varying(30),
-    "last_name" character varying(30),
-    "created_on" timestamp NOT NULL,
-    CONSTRAINT "users_id_key" UNIQUE ("id")
-) WITH (oids = false);
-"""
 
 class User(models.Model):
     first_name = models.CharField(max_length=32)
     last_name = models.CharField(max_length=32)
     created_on = models.DateTimeField(default=timezone.now)
     def __str__(self):
-        return self.first_name + " " + self.last_name
+        return ' '.join((self.first_name,self.last_name))
+
 
 class Track(models.Model):
     vessel = models.ForeignKey(Vessel, on_delete=models.CASCADE)
