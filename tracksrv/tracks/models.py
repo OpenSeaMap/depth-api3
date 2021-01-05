@@ -50,14 +50,21 @@ class User(models.Model):
 class Track(models.Model):
     class ProcessingStatus(models.TextChoices):
         NEW = 'NEW', _('New')
+        FORMAT_IDENTIFIED = 'FID', _('Format identified')
         INGESTING = 'ING', _('Ingesting')
         DONE = 'DNE', _('Done')
+
+    class FileFormat(models.TextChoices):
+        GPX = 'GPX'
+        NMEA0183 = '183', _('NMEA 0183')
+        NMEA0183_OSM = 'OSM', _('NMEA 0183 with OSM timestamps')
 
     vessel = models.ForeignKey(Vessel, on_delete=models.CASCADE)
     submitter = models.ForeignKey(User, on_delete=models.CASCADE)
     uploaded_on = models.DateTimeField('date uploaded',default=timezone.now)
     processing_status = models.CharField(max_length=3, null=True, choices=ProcessingStatus.choices, default=ProcessingStatus.NEW)
     rawfile = models.FileField(upload_to='raw_tracks/')
+    format = models.CharField(max_length=3,null=True,choices=FileFormat.choices)
     note = models.CharField('optional uploaders\' note',max_length=200,null=True)
     quality = models.IntegerField('a track quality measure from 0 (unusable) to 100 (perfect)', null=True)
     def __str__(self):
