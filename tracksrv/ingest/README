@@ -1,0 +1,8 @@
+The scripts in this directory are meant to be called by cron.
+
+guessFormat -- guess the format of the file(s) that haves been uploaded since last run
+ingest      -- ingest all files where formats have been determined, including optional decompression.
+simplify    -- process track points such that on each tile level there are only a manageable number of track points available.
+offset      -- offset tracks by historical tide or gauge levels (not implemented yet)
+guc         -- the grand unified correction that uses all available data to correct tracks (not implemented yet)
+
