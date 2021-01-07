@@ -13,11 +13,12 @@ from itertools import islice
 import django
 from django.contrib.gis.geos import Point
 django.setup()
+import pynmea2
 
 
 from tracks.models import Track,Sounding
 
-def filter_GPX(track):
+def filter_GPX(f):
 
   """
   look for elements of the form
@@ -29,11 +30,8 @@ def filter_GPX(track):
   </trkpt>
   """
 
-  f = track.rawfile
-
   inPt = False
   for event, elem in ET.iterparse(f,("start","end",)):
-#    print("event %s tag=%s"%(event,elem.tag))
 
     if event == "start" and elem.tag == '{http://www.topografix.com/GPX/1/1}trkpt':
       try:
@@ -46,26 +44,53 @@ def filter_GPX(track):
       if inPt:
         try:
           d = float('0' + elem.text.lstrip().rstrip())
-
-#          print("returning %f,%f,%f"%(lon,lat,d))
           yield (lon,lat,d)
-#          cur.execute('INSERT INTO soundings (track_id,coord,depth,min_level) VALUES (%s,point(%s,%s),%s,%s)',(track_id,lon,lat,d,max_level+1))
+
         except:
           pass
 
     if event == "end" and elem.tag == '{http://www.topografix.com/GPX/1/1}trkpt':
       inPt = False
 
-def ingest_GPX(track):
+def filter_NMEA(f,osm=True):
+  last_seen_time = None
 
-#  for c in filter_GPX(track):
-#    print(c)
-#    p = Point(*c)
-#    print (p)
+  for line in f.readlines():
+    if osm:
+      # skip first 15 bytes -- OSM logger preprends every line with a timestamp
+      # XXX TODO make use of timestamp
+      line = line[15:]
+    try:
+      msg = pynmea2.parse(line.decode('utf-8'))
+      if msg.sentence_type == 'GGA': # position and time
+        if msg.is_valid:
+          # record last time and position, and merge them with the next DPT measurement
+          last_seen_time = msg.timestamp
+          lat = msg.latitude
+          lon = msg.longitude
+        else:
+#          logger.debug('found invalid GGA message')
+          pass
+      elif msg.sentence_type == 'DPT': # depth transducer
+        if msg.depth is not None:
+          yield (lon,lat,float(msg.depth + msg.offset))
+        else:
+#         logger.debug('found invalid DPT message')
+          pass
+    except (AttributeError,NameError) as e:
+      # ignore these as apparently no message recognition can be done without them
+      pass
+    except pynmea2.ParseError as e: # ignore all parse errors
+#      logger.debug('Parse error: {%s}',e)
+      pass
+    except (UnicodeDecodeError) as e: # report these but otherwise also ignore
+#      logger.debug('unicode error: {%s}',e)
+      pass
 
-#  return 
-  batch_size = 1000
-  objs = (Sounding(track=track, coord=Point(c)) for c in filter_GPX(track))
+def do_ingest(track,trkPts):
+  # to avoid holding several million points in memory, add the points in batches of 10000
+  batch_size = 10000
+  objs = (Sounding(track=track, coord=Point(c)) for c in trkPts)
   while True:
       batch = list(islice(objs, batch_size))
       if not batch:
@@ -73,7 +98,14 @@ def ingest_GPX(track):
       Sounding.objects.bulk_create(batch, batch_size)
 
 if __name__ == "__main__":
-  for t in Track.objects.filter(format=Track.FileFormat.GPX):
-    print(t)
-
-    ingest_GPX(t)
+  for track in Track.objects.exclude(sounding__min_level__gte=0):
+    print(track)
+    if track.format == Track.FileFormat.GPX:
+      it = filter_GPX(track.rawfile)
+    elif track.format == Track.FileFormat.NMEA0183:
+      it = filter_NMEA(track.rawfile,osm=False)
+    elif track.format == Track.FileFormat.NMEA0183_OSM:
+      it = filter_NMEA(track.rawfile,osm=True)
+    else:
+      it = () # emtpy iterator -> no points
+    do_ingest(track,it)
