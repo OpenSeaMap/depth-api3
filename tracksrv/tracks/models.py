@@ -76,5 +76,5 @@ class Sounding(gismodels.Model):
     MAX_LEVEL = 21
 
     coord = gismodels.PointField(dim=3)
-    min_level = gismodels.PositiveSmallIntegerField(default=MAX_LEVEL)
+    min_level = gismodels.PositiveSmallIntegerField(db_index=True,default=MAX_LEVEL)
     track = gismodels.ForeignKey(Track, on_delete=gismodels.CASCADE)
