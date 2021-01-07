@@ -1,0 +1,2 @@
+#!/bin/bash
+DJANGO_SETTINGS_MODULE=tracksrv.settings python3 -m ingest.ingest.ingest

@@ -2,6 +2,7 @@
 from django.utils import timezone
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.contrib.gis.db import models as gismodels
 
 class Vessel(models.Model):
     class MeasurementType(models.TextChoices):
@@ -55,6 +56,7 @@ class Track(models.Model):
         DONE = 'DNE', _('Done')
 
     class FileFormat(models.TextChoices):
+        UNDETERMINED = 'UND', _('undetermined')
         GPX = 'GPX'
         NMEA0183 = '183', _('NMEA 0183')
         NMEA0183_OSM = 'OSM', _('NMEA 0183 with OSM timestamps')
@@ -64,8 +66,15 @@ class Track(models.Model):
     uploaded_on = models.DateTimeField('date uploaded',default=timezone.now)
     processing_status = models.CharField(max_length=3, null=True, choices=ProcessingStatus.choices, default=ProcessingStatus.NEW)
     rawfile = models.FileField(upload_to='raw_tracks/')
-    format = models.CharField(max_length=3,null=True,choices=FileFormat.choices)
-    note = models.CharField('optional uploaders\' note',max_length=200,null=True)
-    quality = models.IntegerField('a track quality measure from 0 (unusable) to 100 (perfect)', null=True)
+    format = models.CharField(max_length=3,null=True,choices=FileFormat.choices,default=None)
+    note = models.CharField('optional uploaders\' note',max_length=200,null=True, default=None)
+    quality = models.IntegerField('a track quality measure from 0 (unusable) to 100 (perfect)', null=True, default=None)
     def __str__(self):
         return '[%d] (%s %s, submitted by %s on %s)' % (self.id,Vessel.VesselType(self.vessel.vtype).label,self.vessel.name,str(self.submitter),self.uploaded_on)
+
+class Sounding(gismodels.Model):
+    MAX_LEVEL = 21
+
+    coord = gismodels.PointField(dim=3)
+    min_level = gismodels.PositiveSmallIntegerField(default=MAX_LEVEL)
+    track = gismodels.ForeignKey(Track, on_delete=gismodels.CASCADE)
