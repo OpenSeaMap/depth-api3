@@ -33,14 +33,17 @@ def filter_GPX(f):
   inPt = False
   for event, elem in ET.iterparse(f,("start","end",)):
 
-    if event == "start" and elem.tag == '{http://www.topografix.com/GPX/1/1}trkpt':
-      try:
-        lon,lat = float(elem.attrib['lon']),float(elem.attrib['lat'])
-        inPt = True
-      except:
-        pass
+    if elem.tag == '{http://www.topografix.com/GPX/1/1}trkpt':
+      if event == "start":
+        try:
+          lon,lat = float(elem.attrib['lon']),float(elem.attrib['lat'])
+          inPt = True
+        except:
+          pass
+      elif event == "end":
+        inPt = False
 
-    if elem.tag == '{http://www.topografix.com/GPX/1/1}depth':
+    elif elem.tag == '{http://www.topografix.com/GPX/1/1}depth':
       if inPt:
         try:
           d = float('0' + elem.text.lstrip().rstrip())
@@ -48,9 +51,6 @@ def filter_GPX(f):
 
         except:
           pass
-
-    if event == "end" and elem.tag == '{http://www.topografix.com/GPX/1/1}trkpt':
-      inPt = False
 
 def filter_NMEA(f,osm=True):
   last_seen_time = None
@@ -66,8 +66,7 @@ def filter_NMEA(f,osm=True):
         if msg.is_valid:
           # record last time and position, and merge them with the next DPT measurement
           last_seen_time = msg.timestamp
-          lat = msg.latitude
-          lon = msg.longitude
+          lon,lat = msg.longitude,msg.latitude
         else:
 #          logger.debug('found invalid GGA message')
           pass
