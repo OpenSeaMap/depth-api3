@@ -97,7 +97,8 @@ def do_ingest(track,trkPts):
       Sounding.objects.bulk_create(batch, BATCH_SIZE)
 
 if __name__ == "__main__":
-  for track in Track.objects.exclude(sounding__min_level__gte=0):
+  # all tracks that do not have any soundings yet
+  for track in Track.objects.filter(sounding=None):
     print(track)
     if track.format == Track.FileFormat.GPX:
       it = filter_GPX(track.rawfile)
