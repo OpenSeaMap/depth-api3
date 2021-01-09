@@ -70,7 +70,7 @@ class Track(models.Model):
     note = models.CharField('optional uploaders\' note',max_length=200,null=True, default=None)
     quality = models.IntegerField('a track quality measure from 0 (unusable) to 100 (perfect)', null=True, default=None)
     def __str__(self):
-        return '[%d] (%s %s, submitted by %s on %s)' % (self.id,Vessel.VesselType(self.vessel.vtype).label,self.vessel.name,str(self.submitter),self.uploaded_on)
+        return '[Track %d] (on %s %s, submitted by %s on %s)' % (self.id,Vessel.VesselType(self.vessel.vtype).label,self.vessel.name,str(self.submitter),self.uploaded_on)
 
 class Sounding(gismodels.Model):
     MAX_LEVEL = 20
