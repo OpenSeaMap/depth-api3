@@ -47,8 +47,7 @@ def filter_GPX(f):
       if inPt:
         try:
           d = float('0' + elem.text.lstrip().rstrip())
-          yield (lon,lat,d)
-
+          yield Point(lon,lat,d,srid=4326)
         except:
           pass
 
@@ -72,7 +71,7 @@ def filter_NMEA(f,osm=True):
           pass
       elif msg.sentence_type == 'DPT': # depth transducer
         if msg.depth is not None:
-          yield (lon,lat,float(msg.depth + msg.offset))
+          yield Point(lon,lat,float(msg.depth + msg.offset),srid=4326)
         else:
 #         logger.debug('found invalid DPT message')
           pass
@@ -88,13 +87,14 @@ def filter_NMEA(f,osm=True):
 
 def do_ingest(track,trkPts):
   # to avoid holding several million points in memory, add the points in batches of 10000
-  batch_size = 10000
-  objs = (Sounding(track=track, coord=Point(c)) for c in trkPts)
+  BATCH_SIZE = 10000
+
+  objs = (Sounding(track=track, coord=p.transform(3857,clone=True)) for p in trkPts)
   while True:
-      batch = list(islice(objs, batch_size))
+      batch = list(islice(objs, BATCH_SIZE))
       if not batch:
           break
-      Sounding.objects.bulk_create(batch, batch_size)
+      Sounding.objects.bulk_create(batch, BATCH_SIZE)
 
 if __name__ == "__main__":
   for track in Track.objects.exclude(sounding__min_level__gte=0):
