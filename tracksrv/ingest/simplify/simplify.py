@@ -13,103 +13,80 @@ import django
 django.setup()
 
 from django.db.models import Min, F, Func
-
-from django.contrib.gis.geos import Point
-
+from django.contrib.gis.geos import Point, GEOSGeometry, Polygon
 from django.contrib.gis.measure import Distance
 
 from tracks.models import Track,Sounding
 
 import tiles.transform as tf
 
-#def mask2idx(mask):
-#    return [i for i in range(len(mask)) if mask[i]]
+SUBDIV = 1
 
-def pd2md(z,lon,lat,pd):
-  """
-  convert distance in tile pixels to distance in meters, at location lat/lon and zoom level z.
-  
-  This is appoximate since horizontal and vertical distances vary across the tile.
-  """
+EQUATOR = 40075016.68557849
 
-  from django.contrib.gis.geos import GEOSGeometry
-
+def tile_to_3857(z,x,y):
   tpz = 2**z
-  x = tf.lon2x(tpz,lon)
-  y = tf.lat2y(tpz,lat)
+  x =  x/tpz*EQUATOR - EQUATOR/2
+  y = -y/tpz*EQUATOR + EQUATOR/2
+  return x,y
 
-  p  = GEOSGeometry('SRID=4326;POINT(%f %f)'%(lon,lat))
-  p1 = GEOSGeometry('SRID=4326;POINT(%f %f)'%(tf.x2lon(tpz,x+pd),lat))
-  p2 = GEOSGeometry('SRID=4326;POINT(%f %f)'%(lon,tf.y2lat(tpz,y+pd)))
+def recurseDown(z,x,y):
+  """ starting with 0,0,0, if there is a point in the tile, recurse
 
-  return 0.5*(p.distance(p1)+p.distance(p2)) * 100
-
-def simplify(track,grid=256):
-  """simplifyTrack(track,grid)
-
-  track: the track to simplify
-  grid: the resolution (?)
-  get all points from the track. Then for every level between maxlevel and 0,
-  and all tiles that the track traverses, start with the first point in this tile and keep it
-  then search the first point that is further than one pixel, keep that,
-  aso
+    if we are at the lowest level, find the shallowest point and enter it z+subdiv levels higher
   """
 
-  # start out with all points in zoom level 1014
-  print("Preparing soundings")
-  Sounding.objects.filter(track=track).update(min_level=1014)
-  for l in range(1014,1000+Sounding.MAX_LEVEL):
-    print("LEVEL %d"%(l-1000))
+  if z == 15:
+    print()
+    print("LEVEL %d tile %d,%d"%(z,x,y))
 
-    # find all track points at this or lower zoom levels
-    while True:
-      print ("working on level %d"%(l-1000))
-      pts = Sounding.objects.filter(track=track,min_level__lte=1000+l)
-      print ("working on level %d, points left: %d"%(l-1000,pts.count()))
+  bbox = Polygon.from_bbox((*tile_to_3857(z,x,y+1), *tile_to_3857(z,x+1,y)))
+  bbox.srid = 3857
+  #bbox = bbox.prepared
 
-      if pts.count() == 0: # if no more points at this level, go to next level
-        break
+#  pts = Sounding.objects.filter(coord__coveredby=bbox,min_level__lte=z-subdiv)
+#  pts = Sounding.objects.filter(coord__bbcontains=bbox)
+  pts = Sounding.objects.filter(coord__contained=bbox)
+#  print(pts.query)
 
-#    pts_d = pts.annotate(d=Func(F('coord'),function='ST_Z'))
+  if pts.count():
+#    print("%d points in box"%(pts.count()))
 
-    # determine the shallowest point
-#    shallow_level = pts_d.aggregate(Min('d'))
+    if z == Sounding.MAX_LEVEL+SUBDIV:
+#      print("select shallowest direct")
+      if z >= 15:
+        print(".",end="")
+      pass
+      # simply select the shallowest of all points in this tile
+    else:
+      # else recurse
+      pts = [recurseDown(z+1,2*x,2*y),  recurseDown(z+1,2*x+1,2*y),
+             recurseDown(z+1,2*x,2*y+1),recurseDown(z+1,2*x+1,2*y+1)]
+      if z >= 15:
+        print("+",end="")
 
- #   print('random result: %s'%(str()))
+    if z >= SUBDIV:
+      for p_min in pts:
+        if p_min is not None: break
 
-#    print("shallowest level: %f"%(shallow_level))
+      d_min = p_min.coord.z
+      for p in pts:
+        if p is not None and p.coord.z < d_min:
+          d_min,p_min = p.coord.z,p
 
-#    shallow_pt = pts_d.filter(d=shallow_level)[0]
+      p_min.min_level = z-SUBDIV
+      p_min.save()
 
-      shallow_pt_qry = pts.raw("""
-        WITH shallow_d AS (
-          SELECT min(ST_Z(coord)) FROM tracks_sounding WHERE min_level <= %(l)s AND track_id = %(id)s
-        ) SELECT id FROM tracks_sounding
-          WHERE ST_Z(coord)=(SELECT min FROM shallow_d) AND min_level <= %(l)s AND track_id = %(id)s
-      """,{'l':1000+l,'id':track.id})
-      if len(shallow_pt_qry) == 0: # if no more points at this level, go to next level
-        print("out of points, unexpectedly")
-        break
+      return p_min
 
-      shallow_pt = shallow_pt_qry[0]
+  return None
 
-      print("shallowest point: %s"%str(shallow_pt))
-      print("shallowest level: %f"%(shallow_pt.coord.z))
-
-      # if it is still in the temp levels, move it into zoom level l
-      if shallow_pt.min_level >= 1000:
-        shallow_pt.min_level = l
-
-      r = Distance(km=1000*pd2md(l-1000,shallow_pt.coord.x,shallow_pt.coord.y,1.0/grid))
-      print("minDist = %f [m]"%(r.km*1000))
-
-      # move all points within radius r into the next level
-      print("filtering away objects")
-      Sounding.objects.filter(coord__distance_lt=(shallow_pt.coord, r)).update(min_level=1000+1+l)
-      print("done")
+def simplify(track,grid):
+#  Sounding.objects.filter(track=track).update(min_level=Sounding.MAX_LEVEL+1)
+  recurseDown(0,0,0)
 
 if __name__ == "__main__":
   print("Simplify")
-  for track in Track.objects.all():#.exclude(sounding__min_level__gte=Sounding.MAX_LEVEL):
+  for track in Track.objects.exclude(sounding=None):
     print(track)
     simplify(track, 256)
