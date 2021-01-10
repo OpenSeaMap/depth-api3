@@ -1,0 +1,19 @@
+#!/bin/bash
+
+DB_EXISTS=$(if [ -e Dockerfiles ]; then echo y; fi)
+
+echo Waiting for everything to start up
+sleep 10
+
+echo Migrating database to latest...
+./manage.py makemigrations --verbosity=3
+./manage.py migrate --verbosity=3
+
+# run this only if the DB did not already exist
+if [ -z "$DB_EXISTS" ]; then
+  echo Creating superuser...
+  echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('$SUPERUSER', '$SUPERUSER_EMAIL', '$SUPERUSER_PASSWORD')" | ./manage.py shell --verbosity=3
+fi
+
+echo Running server...
+./manage.py runserver 0.0.0.0:8000 --verbosity=3

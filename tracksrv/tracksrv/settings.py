@@ -72,6 +72,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'tracksrv.wsgi.application'
 
+# this is where the track server stores the received raw files
+MEDIA_ROOT = '/srv/tracksrv'
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
