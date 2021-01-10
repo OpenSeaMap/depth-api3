@@ -42,5 +42,5 @@ def delaunay(z,xi,yi,pts,depth,res=256,fmt='png'):
     fig,ax = setup_fig_ax(z,xi,yi)
     tri = Delaunay(pts)
 #    print("delaunay(%s)=%s"%(pts,tri.simplices))
-    ax.triplot(pts[:,0], pts[:,1], tri.simplices,linewidth=0.05)
+    ax.triplot(pts[:,0], pts[:,1], tri.simplices,linewidth=0.25,c='k')
     return get_figcontents(fig,res,fmt)
