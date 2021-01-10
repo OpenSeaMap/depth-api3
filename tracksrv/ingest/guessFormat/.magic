@@ -1,0 +1,15 @@
+# test for GPX file patterns
+0 string <?xml
+>0 search/60 ?>
+>>&0 search/160 \<gpx GPX file
+>>>&0 search/600 \<trk with tracks
+>>>>&0 search/200 \<trkpt containing points
+
+# NMEA0183 with GNS RMC (recommended minimum sentence C)
+# check for $GPRMC,HHMMSS,A,BBBB.BBBB,b,LLLLL.LLLL,l,GG.G,RR.R,DDMMYY,M.M,m,F*PP
+# example   $GPRMC,132515.00,A,4800.28859,N,01108.40929,E,2.569,250.97,031019,,,A*68
+0 search/s8192 $GPRMC
+>&0 regex/8192 \\$GPRMC,[0-9]{6}(.[0-9]+),[AV],[0-9]{4}(.[0-9]+),[NS],[0-9]{5}(.[0-9]+),[EW], NMEA0183 with GNS RMS sentence
+>>&0 regex/200 \\*[0-9A-Z]{2}\015?$                                                           (with checksums)
+>>0 regex/8192 \\$SD                                                                        \b, sounder data
+>>0 regex/8192 \^[0-9][0-9]:[0-9][0-9]:[0-9][0-9](\.[0-9]+)?;[A-Z];                         \b, OSM time stamps

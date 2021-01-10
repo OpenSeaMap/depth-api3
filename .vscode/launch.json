@@ -1,0 +1,34 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Django",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/tracksrv/manage.py",
+            "args": [
+                "runserver"
+            ],
+            "django": true
+        },
+        {
+            "name": "Python: Ingest",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/tracksrv",
+            "program": "${workspaceFolder}/tracksrv/ingest/ingest/ingest.py",
+            "args": [
+                "-m","ingest.ingest.ingest"
+            ],
+            "env": {
+                "DJANGO_SETTINGS_MODULE":"tracksrv.settings",
+//                "VIRTUAL_ENV":"${workspaceFolder}/tracksrv/venvs/postgres"
+            },
+            "console": "internalConsole",
+//            "django": true
+        }
+    ]
+}
