@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404,render
 
-from django.http import HttpResponse,JsonResponse
+from django.http import HttpResponse,JsonResponse, FileResponse
 from django.core.paginator import Paginator
 
 from .models import Track,Sounding
@@ -28,5 +28,4 @@ def detail(request, track_id):
 
 def raw(request, track_id):
     track = get_object_or_404(Track, pk=track_id)
-    return HttpResponse("raw file for track %d"%(track_id,))
-# use StreamingHttpResponse, or rather FileResponse
+    return FileResponse(track.rawfile,as_attachment=True)
