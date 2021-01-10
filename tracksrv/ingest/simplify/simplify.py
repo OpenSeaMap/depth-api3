@@ -19,16 +19,9 @@ from django.contrib.gis.measure import Distance
 from tracks.models import Track,Sounding
 
 import tiles.transform as tf
+from tiles.util import tile_to_3857
 
-SUBDIV = 3
-
-EQUATOR = 40075016.68557849
-
-def tile_to_3857(z,x,y):
-  tpz = 2**z
-  x =  (x/tpz - 0.5)*EQUATOR
-  y = (-y/tpz + 0.5)*EQUATOR
-  return x,y
+SUBDIV = 2
 
 def recurseDown(z,x,y):
   """ starting with 0,0,0, if there is a point in the tile, recurse
@@ -51,6 +44,7 @@ def recurseDown(z,x,y):
 
     if z == Sounding.MAX_LEVEL+SUBDIV:
 #      print("select shallowest direct")
+      pts.update(min_level=Sounding.MAX_LEVEL+1)
       if z >= 15:
         print(".",end="")
       pass
@@ -79,7 +73,7 @@ def recurseDown(z,x,y):
   return None
 
 def simplify(track,grid):
-  Sounding.objects.filter(track=track).update(min_level=Sounding.MAX_LEVEL+1)
+#  Sounding.objects.filter(track=track).update(min_level=Sounding.MAX_LEVEL+1)
   recurseDown(0,0,0)
 
 if __name__ == "__main__":
