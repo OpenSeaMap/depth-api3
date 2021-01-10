@@ -20,14 +20,14 @@ from tracks.models import Track,Sounding
 
 import tiles.transform as tf
 
-SUBDIV = 1
+SUBDIV = 3
 
 EQUATOR = 40075016.68557849
 
 def tile_to_3857(z,x,y):
   tpz = 2**z
-  x =  x/tpz*EQUATOR - EQUATOR/2
-  y = -y/tpz*EQUATOR + EQUATOR/2
+  x =  (x/tpz - 0.5)*EQUATOR
+  y = (-y/tpz + 0.5)*EQUATOR
   return x,y
 
 def recurseDown(z,x,y):
@@ -42,10 +42,7 @@ def recurseDown(z,x,y):
 
   bbox = Polygon.from_bbox((*tile_to_3857(z,x,y+1), *tile_to_3857(z,x+1,y)))
   bbox.srid = 3857
-  #bbox = bbox.prepared
 
-#  pts = Sounding.objects.filter(coord__coveredby=bbox,min_level__lte=z-subdiv)
-#  pts = Sounding.objects.filter(coord__bbcontains=bbox)
   pts = Sounding.objects.filter(coord__contained=bbox)
 #  print(pts.query)
 
@@ -82,7 +79,7 @@ def recurseDown(z,x,y):
   return None
 
 def simplify(track,grid):
-#  Sounding.objects.filter(track=track).update(min_level=Sounding.MAX_LEVEL+1)
+  Sounding.objects.filter(track=track).update(min_level=Sounding.MAX_LEVEL+1)
   recurseDown(0,0,0)
 
 if __name__ == "__main__":
