@@ -73,7 +73,7 @@ class Track(models.Model):
         return '[Track %d] (on %s %s, submitted by %s on %s)' % (self.id,Vessel.VesselType(self.vessel.vtype).label,self.vessel.name,str(self.submitter),self.uploaded_on)
 
 class Sounding(gismodels.Model):
-    MAX_LEVEL = 20
+    MAX_LEVEL = 17
 
     coord = gismodels.PointField(dim=3)
     min_level = gismodels.PositiveSmallIntegerField(db_index=True,default=MAX_LEVEL)
