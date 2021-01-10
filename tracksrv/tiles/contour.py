@@ -38,33 +38,7 @@ class seabed_norm(Normalize):
     def __call__(self,value,clip=None):
         return np.ma.masked_array(np.interp(value,self.x,self.y))
 
-tileLock = threading.Lock()
-
-EQUATOR = 40075016.68557849
-
-def tile_to_3857(z,x,y):
-  tpz = 2**z
-  x =  x/tpz*EQUATOR - EQUATOR/2
-  y = -y/tpz*EQUATOR + EQUATOR/2
-  return x,y
-
-def setup_fig_ax(z,xi,yi):
-  fig = Figure(figsize=[1.,1.],frameon=False)
-  ax = Axes(fig, [0,0,1,1],frameon=False,clip_on=True)
-  ax.set_axis_off()
-  ax.set_autoscale_on(False)
-  x0,y0,x1,y1 = *tile_to_3857(z,xi,yi),*tile_to_3857(z,xi+1,yi+1)
-  ax.set_xbound(x0,x1)
-  ax.set_ybound(y0,y1)
-  fig.add_axes(ax)
-  return fig,ax
-
-def get_figcontents(fig,res,fmt):
-  output = io.BytesIO()
-  fig.savefig(output,pad_inches=0,bbox_inches='tight',dpi=res,transparent=True,format=fmt)
-  contents = output.getvalue()
-  output.close()
-  return contents
+from tiles.util import NoTile, tile_to_3857, setup_fig_ax, get_figcontents, tileLock
 
 def tile(z,xi,yi,c_tile,depth,res=256,fmt='png',colormap=True,soundings=None,isolines=None,color_scheme=std_chart_colors):
   """return a graphics file with contour lines
@@ -72,6 +46,9 @@ def tile(z,xi,yi,c_tile,depth,res=256,fmt='png',colormap=True,soundings=None,iso
   x,y -- tile coordinates
   res=256,fmt='png',colormap=False,soundings=True,isolines=True,color_scheme=std_chart_colors
   """
+
+  if len(c_tile)<3:
+    raise NoTile
 
   if soundings is None:
     soundings = (z>=14)
@@ -85,11 +62,10 @@ def tile(z,xi,yi,c_tile,depth,res=256,fmt='png',colormap=True,soundings=None,iso
   with tileLock:
     fig,ax = setup_fig_ax(z,xi,yi)
 
-
     cm_seabed = ListedColormap(color_scheme["colors"])
     sn = seabed_norm(color_scheme["levels"])
 
-    if (colormap or isolines) and len(depth) >= 3:
+    if colormap or isolines:
 
         x0,y0,x1,y1 = *tile_to_3857(z,xi,yi),*tile_to_3857(z,xi+1,yi+1)
         xs, ys = np.mgrid[x0:x1:subdiv*1j, y0:y1:subdiv*1j]

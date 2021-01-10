@@ -19,16 +19,9 @@ from django.contrib.gis.measure import Distance
 from tracks.models import Track,Sounding
 
 import tiles.transform as tf
+from tile.util import tile_to_3857
 
 SUBDIV = 3
-
-EQUATOR = 40075016.68557849
-
-def tile_to_3857(z,x,y):
-  tpz = 2**z
-  x =  (x/tpz - 0.5)*EQUATOR
-  y = (-y/tpz + 0.5)*EQUATOR
-  return x,y
 
 def recurseDown(z,x,y):
   """ starting with 0,0,0, if there is a point in the tile, recurse

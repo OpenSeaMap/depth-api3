@@ -8,7 +8,7 @@ import numpy as np
 from scipy.interpolate import griddata
 
 from django.shortcuts import render
-from django.http import FileResponse, HttpResponse, JsonResponse, Http404
+from django.http import FileResponse, HttpResponse, JsonResponse
 from django.contrib.gis.geos import GEOSGeometry, Polygon
 from django.utils.cache import patch_response_headers
 from django.views.decorators.http import condition
@@ -26,20 +26,7 @@ source_reloaded = datetime.datetime.today()
 #cpus = len(sched_getaffinity(0))
 #processPool = Pool(processes = max(1,cpus-1))
 
-class Perf():
-    def __init__(self):
-        self.start = time.time()
-
-    def done(self):
-        return time.time()-self.start
-
-EQUATOR = 40075016.68557849
-
-def tile_to_3857(z,x,y):
-  tpz = 2**z
-  x =  x/tpz*EQUATOR - EQUATOR/2
-  y = -y/tpz*EQUATOR + EQUATOR/2
-  return x,y
+from tiles.util import NoTile, tile_to_3857, setup_fig_ax, get_figcontents, tileLock
 
 def _gettile(z,xi,yi,func):
 #    print("called _gettile")
@@ -52,7 +39,7 @@ def _gettile(z,xi,yi,func):
     npts = pts_q.count()
 
     if npts == 0:
-        print("_gettile(%d,%d,%d), 0 points"%(z,xi,yi))
+#        print("_gettile(%d,%d,%d), 0 points"%(z,xi,yi))
         resp = HttpResponse("empty tile")
         resp.status_code = 204
         return resp
@@ -64,7 +51,7 @@ def _gettile(z,xi,yi,func):
 
     try:
         s = func(z,xi,yi,pts,depth)
-    except Http404:
+    except NoTile:
         resp = HttpResponse("empty tile")
         resp.status_code = 204
         return resp
