@@ -26,7 +26,7 @@ SECRET_KEY = 'hs^gk%s=d2*cw-&2ri7(naj4@&j42cp6b9t#p$!z$-sp9w^vz&'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['lightning']
 
 
 # Application definition
