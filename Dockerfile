@@ -41,14 +41,14 @@ USER tracksrv
 ENV MPLCONFIGDIR=/tmp
 # set debug to "yes" to enable debugging functionality
 ENV DEBUG=
-ENV TESTURL=http://localhost:8000/admin
+ENV SERVER_HOST=localhost
 ENV TMP=/tmp
-ENV SUPERUSER=admin
-ENV SUPERUSER_PASSWORD=admin
-ENV SUPERUSER_EMAIL=no@bo.dy
+ENV SUPERUSER=
+ENV SUPERUSER_PASSWORD=
+ENV SUPERUSER_EMAIL=
 
 HEALTHCHECK --interval=1m --timeout=3s --start-period=10s \
-  CMD curl -Ss $TESTURL || exit 1
+  CMD curl -Ss ${SERVER_HOST}/admin || exit 1
 
 ENTRYPOINT ["/bin/sh"]
 

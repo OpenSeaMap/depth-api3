@@ -7,19 +7,19 @@ services:
     image: postgis/postgis
     restart: unless-stopped
     environment:
-      POSTGRES_PASSWORD: 'abcde' # XXX change me
-      POSTGRES_USER: 'postgres'
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - POSTGIS_DATA:/var/lib/postgresql/data
       - TRACKS_DATA:/srv/tracksrv/tracks
     networks:
       db:
 
-#    healthcheck:
-#      test: ["CMD", "pg_isready", "-U", "$POSTGRES_USER"]
-#      interval: 30s
-#      timeout: 3s
-#      retries: 30
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}"]
+      interval: 30s
+      timeout: 3s
+      retries: 30
 
 #  adminer:
 #    image: adminer
@@ -40,6 +40,12 @@ services:
 #      docker_dmz:
     ports:
       - 8000:8000
+    environment:
+      # set these in your .env file
+      - SERVER_HOST=${SERVER_HOST}
+      - SUPERUSER=${SUPERUSER}
+      - SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
+      - SUPERUSER_EMAIL=${SUPERUSER_EMAIL}
 
 # Custom network so all services can communicate using a FQDN
 networks:
