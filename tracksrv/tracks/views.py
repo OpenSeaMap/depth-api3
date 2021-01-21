@@ -2,23 +2,38 @@ from django.shortcuts import get_object_or_404,render
 
 from django.http import HttpResponse,JsonResponse, FileResponse
 from django.core.paginator import Paginator
+from django.db.models import Count
 
-from .models import Track,Sounding
+from .models import Track,Sounding,Vessel
 
-def index(request):
+
+def getTrackContext(request):
     page = request.GET.get('page',default=1) # XXX use next/prev style navigation
     limit = request.GET.get('limit',default=50)
-    paginator = Paginator(Track.objects.order_by('-uploaded_on'),per_page=limit)
 
-    trackList = [{'id':t.id,'uploaded_on':t.uploaded_on} for t in paginator.get_page(page)]
+    q = Track.objects
+    if not request.user.is_staff:
+        # staff sees everything
+        q = q.filter(submitter=request.user)
 
-    return JsonResponse(trackList, safe=False)
+    q = q.order_by('-uploaded_on').annotate(npoints=Count('sounding'))
+
+    paginator = Paginator(q,per_page=limit)
+
+    return [{'id':t.id,'vessel_id':t.vessel.id,'vessel_name':t.vessel.name,'uploaded_on':t.uploaded_on,'n_points':t.npoints} for t in paginator.get_page(page)]
+
+
+def index(request):
+    return JsonResponse(getTrackContext(request), safe=False)
+
+
+
 
 def detail(request, track_id):
     if request.method == 'POST':
         vessel_id = request.GET.get('vessel')
         submitter_id = 1 # derive from logged-in user
-        vessel = Vessel.object.get(pk=vessel_id)
+        vessel = Vessel.objects.get(pk=vessel_id)
         track = Track(vessel=vessel, submitter=submitter_id)
         track.save()
     else:
