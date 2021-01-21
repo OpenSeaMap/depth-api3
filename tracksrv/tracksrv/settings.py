@@ -130,3 +130,6 @@ STATIC_URL = '/static/'
 
 # Redirect to tracks view after login (Default redirects to /accounts/profile/)
 LOGIN_REDIRECT_URL = '/1.0/tracks'
+
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = '25'

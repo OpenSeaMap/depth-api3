@@ -13,6 +13,8 @@ from itertools import islice
 import django
 from django.contrib.gis.geos import Point
 django.setup()
+from django.core.mail import send_mail
+
 import pynmea2
 
 
@@ -97,6 +99,15 @@ def do_ingest(track,trkPts):
       Sounding.objects.bulk_create(batch, BATCH_SIZE)
 
 if __name__ == "__main__":
+
+  send_mail(
+    'Ingest is starting',
+    'The ingest process has started.',
+    'ingest@fermi.franken.de',       # FROM
+    ['openseamap@fermi.franken.de'], # TO
+    fail_silently=False,
+  )
+
   # all tracks that do not have any soundings yet
   for track in Track.objects.filter(sounding=None):
     print(track)
@@ -109,3 +120,14 @@ if __name__ == "__main__":
     else:
       it = () # emtpy iterator -> no points
     do_ingest(track,it)
+    if it != ():
+      subject = 'Done ingesting {}'.format(str(track))
+      body = """The track contained {} points
+      """.format(track.npoints)
+
+      send_mail(
+        subject,body,
+        'ingest@fermi.franken.de',       # FROM
+        ['openseamap@fermi.franken.de'], # TO
+        fail_silently=False,
+      )
