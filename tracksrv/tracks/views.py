@@ -2,17 +2,26 @@ from django.shortcuts import get_object_or_404,render
 
 from django.http import HttpResponse,JsonResponse, FileResponse
 from django.core.paginator import Paginator
+from django.db.models import Count
 
 from .models import Track,Sounding
 
-def index(request):
+
+def getTrackContext(request):
     page = request.GET.get('page',default=1) # XXX use next/prev style navigation
     limit = request.GET.get('limit',default=50)
-    paginator = Paginator(Track.objects.order_by('-uploaded_on'),per_page=limit)
+    q = Track.objects.order_by('-uploaded_on').annotate(npoints=Count('sounding'))
 
-    trackList = [{'id':t.id,'uploaded_on':t.uploaded_on} for t in paginator.get_page(page)]
+    paginator = Paginator(q,per_page=limit)
 
-    return JsonResponse(trackList, safe=False)
+    return [{'id':t.id,'vessel_id':t.vessel.id,'vessel_name':t.vessel.name,'uploaded_on':t.uploaded_on,'n_points':t.npoints} for t in paginator.get_page(page)]
+
+
+def index(request):
+    return JsonResponse(getTrackContext(request), safe=False)
+
+
+
 
 def detail(request, track_id):
     if request.method == 'POST':
