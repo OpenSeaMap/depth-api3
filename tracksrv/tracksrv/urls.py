@@ -21,3 +21,9 @@ urlpatterns = [
     path('1.0/tiles/', include('tiles.urls')),
     path('admin/', admin.site.urls),
 ]
+
+#Add Django site authentication urls (for login, logout, password management)
+
+urlpatterns += [
+    path('accounts/', include('django.contrib.auth.urls')),
+]

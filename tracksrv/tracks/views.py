@@ -4,13 +4,19 @@ from django.http import HttpResponse,JsonResponse, FileResponse
 from django.core.paginator import Paginator
 from django.db.models import Count
 
-from .models import Track,Sounding
+from .models import Track,Sounding,Vessel
 
 
 def getTrackContext(request):
     page = request.GET.get('page',default=1) # XXX use next/prev style navigation
     limit = request.GET.get('limit',default=50)
-    q = Track.objects.order_by('-uploaded_on').annotate(npoints=Count('sounding'))
+
+    q = Track.objects
+    if not request.user.is_staff:
+        # staff sees everything
+        q = q.filter(submitter=request.user)
+
+    q = q.order_by('-uploaded_on').annotate(npoints=Count('sounding'))
 
     paginator = Paginator(q,per_page=limit)
 
@@ -27,7 +33,7 @@ def detail(request, track_id):
     if request.method == 'POST':
         vessel_id = request.GET.get('vessel')
         submitter_id = 1 # derive from logged-in user
-        vessel = Vessel.object.get(pk=vessel_id)
+        vessel = Vessel.objects.get(pk=vessel_id)
         track = Track(vessel=vessel, submitter=submitter_id)
         track.save()
     else:

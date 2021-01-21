@@ -1,8 +1,7 @@
-#import datetime
 from django.utils import timezone
-from django.db import models
+from django.contrib.gis.db import models
 from django.utils.translation import gettext_lazy as _
-from django.contrib.gis.db import models as gismodels
+from django.contrib.auth.models import User
 
 class Vessel(models.Model):
     class MeasurementType(models.TextChoices):
@@ -18,6 +17,7 @@ class Vessel(models.Model):
         KAJAK = 'KJ', _('Kajak')
         DINGHY ='DG', _('Dinghy')
 
+    submitter = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField('the vessel name',max_length=128)
     created_on = models.DateTimeField('date created in database',default=timezone.now)
     length = models.FloatField('length in meters')
@@ -41,13 +41,6 @@ class Vessel(models.Model):
     def __str__(self):
         return '%s %s (%s %s) (%2.1fm/%1.1fm/%1.1fm/%1.1ft)'%(Vessel.VesselType(self.vtype).label,self.name,self.manufacturer,self.model,self.length,self.beam,self.draft,self.displacement)
 
-class User(models.Model):
-    first_name = models.CharField(max_length=32)
-    last_name = models.CharField(max_length=32)
-    created_on = models.DateTimeField(default=timezone.now)
-    def __str__(self):
-        return ' '.join((self.first_name,self.last_name))
-
 class Track(models.Model):
     class ProcessingStatus(models.TextChoices):
         NEW = 'NEW', _('New')
@@ -61,7 +54,7 @@ class Track(models.Model):
         NMEA0183_OSM = 'OSM', _('NMEA 0183 with OSM timestamps')
 
     vessel = models.ForeignKey(Vessel, on_delete=models.CASCADE)
-    submitter = models.ForeignKey(User, on_delete=models.CASCADE)
+    submitter = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     uploaded_on = models.DateTimeField('date uploaded',default=timezone.now)
     processing_status = models.CharField(max_length=3, blank=True, choices=ProcessingStatus.choices, default=ProcessingStatus.NEW)
     rawfile = models.FileField(upload_to='raw_tracks/')
@@ -71,9 +64,9 @@ class Track(models.Model):
     def __str__(self):
         return '[Track %d] (on %s %s, submitted by %s on %s)' % (self.id,Vessel.VesselType(self.vessel.vtype).label,self.vessel.name,str(self.submitter),self.uploaded_on)
 
-class Sounding(gismodels.Model):
+class Sounding(models.Model):
     MAX_LEVEL = 17
 
-    coord = gismodels.PointField(dim=3)
-    min_level = gismodels.PositiveSmallIntegerField(db_index=True,default=MAX_LEVEL)
-    track = gismodels.ForeignKey(Track, on_delete=gismodels.CASCADE)
+    coord = models.PointField(dim=3)
+    min_level = models.PositiveSmallIntegerField(db_index=True,default=MAX_LEVEL)
+    track = models.ForeignKey(Track, on_delete=models.CASCADE)
