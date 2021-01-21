@@ -36,8 +36,8 @@ class Vessel(models.Model):
     gps_sensor_offset_z = models.FloatField('position above waterline in meters')
     measurement_type = models.CharField(max_length=2, null=True, choices=MeasurementType.choices)
     depth_sensor_offset_keel = models.FloatField(null=True, blank=True) # XXX what is this?
-    depth_sensor_manufacturer = models.CharField(max_length=32, blank=True)
-    depth_sensor_model = models.CharField(max_length=20, blank=True)
+    depth_sensor_manufacturer = models.CharField(max_length=32, blank=True, default="")
+    depth_sensor_model = models.CharField(max_length=20, blank=True, default="")
     def __str__(self):
         return '%s %s (%s %s) (%2.1fm/%1.1fm/%1.1fm/%1.1ft)'%(Vessel.VesselType(self.vtype).label,self.name,self.manufacturer,self.model,self.length,self.beam,self.draft,self.displacement)
 
@@ -56,7 +56,6 @@ class Track(models.Model):
         DONE = 'DNE', _('Done')
 
     class FileFormat(models.TextChoices):
-        UNDETERMINED = 'UND', _('undetermined')
         GPX = 'GPX'
         NMEA0183 = '183', _('NMEA 0183')
         NMEA0183_OSM = 'OSM', _('NMEA 0183 with OSM timestamps')
@@ -66,9 +65,9 @@ class Track(models.Model):
     uploaded_on = models.DateTimeField('date uploaded',default=timezone.now)
     processing_status = models.CharField(max_length=3, blank=True, choices=ProcessingStatus.choices, default=ProcessingStatus.NEW)
     rawfile = models.FileField(upload_to='raw_tracks/')
-    format = models.CharField(max_length=3,blank=True,choices=FileFormat.choices)
-    note = models.CharField('optional uploaders\' note',max_length=200,blank=True)
-    quality = models.IntegerField('a track quality measure from 0 (unusable) to 100 (perfect)', blank=True)
+    format = models.CharField(max_length=3,blank=True,choices=FileFormat.choices,default="")
+    note = models.CharField('optional uploaders\' note',max_length=200,blank=True,default="")
+    quality = models.IntegerField('a track quality measure from 0 (unusable) to 100 (perfect)', default=0)
     def __str__(self):
         return '[Track %d] (on %s %s, submitted by %s on %s)' % (self.id,Vessel.VesselType(self.vessel.vtype).label,self.vessel.name,str(self.submitter),self.uploaded_on)
 
