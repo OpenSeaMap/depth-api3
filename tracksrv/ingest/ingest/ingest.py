@@ -46,7 +46,7 @@ def filter_GPX(f):
         inPt = False
 
     elif elem.tag == '{http://www.topografix.com/GPX/1/1}depth':
-      if inPt:
+      if event == "start" and inPt:
         try:
           d = float('0' + elem.text.lstrip().rstrip())
           yield Point(lon,lat,d,srid=4326)
