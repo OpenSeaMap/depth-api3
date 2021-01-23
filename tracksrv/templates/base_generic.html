@@ -15,8 +15,11 @@
       <div class="col-sm-2">
       {% block sidebar %}
         <ul class="sidebar-nav">
-          <li><a href="">All books</a></li>
-          <li><a href="">All authors</a></li>
+          <li>Logged in as: {{ user.username }}</li>
+          <li><a href="{% url 'login' %}">Log in</a></li>
+          <li><a href="{% url 'logout' %}">Log out</a></li>
+          <li><a href="{% url 'password_change' %}">Change Password</a></li>
+          <li><a href="{% url 'tracks:api-tracks-index' %}">Tracks Index API</a></li>
         </ul>
      {% endblock %}
       </div>
