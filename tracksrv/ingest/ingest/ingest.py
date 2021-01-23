@@ -100,13 +100,16 @@ def do_ingest(track,trkPts):
 
 if __name__ == "__main__":
 
-  send_mail(
-    'Ingest is starting',
-    'The ingest process has started.',
-    'ingest@fermi.franken.de',       # FROM
-    ['openseamap@fermi.franken.de'], # TO
-    fail_silently=False,
-  )
+  try:
+    send_mail(
+      'Ingest is starting',
+      'The ingest process has started.',
+      'ingest@fermi.franken.de',       # FROM
+      ['openseamap@fermi.franken.de'], # TO
+      fail_silently=False,
+    )
+  except:
+    pass
 
   # all tracks that do not have any soundings yet
   for track in Track.objects.filter(sounding=None):
@@ -125,9 +128,12 @@ if __name__ == "__main__":
       body = """The track contained {} points
       """.format(track.npoints)
 
-      send_mail(
-        subject,body,
-        'ingest@fermi.franken.de',       # FROM
-        ['openseamap@fermi.franken.de'], # TO
-        fail_silently=False,
-      )
+      try:
+        send_mail(
+          subject,body,
+          'ingest@fermi.franken.de',       # FROM
+          ['openseamap@fermi.franken.de'], # TO
+          fail_silently=False,
+        )
+      except:
+        pass
