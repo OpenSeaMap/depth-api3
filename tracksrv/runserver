@@ -1,6 +1,8 @@
 #!/bin/bash
 
-DB_EXISTS=$(if [ -e .server-initialized ]; then echo y; fi)
+DB_EXISTS=$(if [ -e /srv/tracksrv/tracks/.server-initialized ]; then echo y; fi)
+
+mkdir /srv/tracksrv/tracks/raw_tracks
 
 echo Waiting for everything to start up
 sleep 10
@@ -15,6 +17,6 @@ if [ -z "$DB_EXISTS" ]; then
   echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('$SUPERUSER', '$SUPERUSER_EMAIL', '$SUPERUSER_PASSWORD')" | ./manage.py shell --verbosity=3
 fi
 
-touch .server-initialized
+touch /srv/tracksrv/tracks/.server-initialized
 echo Running server...
 ./manage.py runserver 0.0.0.0:8000 --verbosity=3
