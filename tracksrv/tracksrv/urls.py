@@ -18,6 +18,7 @@ from django.urls import include,path
 
 urlpatterns = [
     path('1.0/tracks/', include('tracks.urls')),
+    path('tracks/', include('tracks.html_urls')),
     path('1.0/tiles/', include('tiles.urls')),
     path('admin/', admin.site.urls),
 ]

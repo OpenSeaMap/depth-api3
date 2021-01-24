@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import get_object_or_404,render
 
 from django.http import HttpResponse,JsonResponse, FileResponse
@@ -20,15 +21,17 @@ def getTrackContext(request):
 
     paginator = Paginator(q,per_page=limit)
 
-    return [{'id':t.id,'vessel_id':t.vessel.id,'vessel_name':t.vessel.name,'uploaded_on':t.uploaded_on,'n_points':t.npoints} for t in paginator.get_page(page)]
+    return dict(track_list=[{'id':t.id,'vessel_id':t.vessel.id,'vessel_name':t.vessel.name,'uploaded_on':t.uploaded_on,'n_points':t.npoints} for t in paginator.get_page(page)])
 
-
+@permission_required('tracks.view')
 def index(request):
     return JsonResponse(getTrackContext(request), safe=False)
 
+@permission_required('tracks.view')
+def html_index(request):
+    return render(request, 'tracks_index.html', context=getTrackContext(request))
 
-
-
+@permission_required('tracks.view')
 def detail(request, track_id):
     if request.method == 'POST':
         vessel_id = request.GET.get('vessel')
