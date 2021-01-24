@@ -126,7 +126,7 @@ if __name__ == "__main__":
     if it != ():
       subject = 'Done ingesting {}'.format(str(track))
       body = """The track contained {} points
-      """.format(track.npoints)
+      """.format(Sounding.objects.filter(track=track).count())
 
       try:
         send_mail(
