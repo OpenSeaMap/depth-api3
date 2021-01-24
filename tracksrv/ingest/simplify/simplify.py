@@ -78,6 +78,6 @@ def simplify(track,grid):
 
 if __name__ == "__main__":
   print("Simplify")
-  for track in Track.objects.exclude(sounding=None):
+  for track in Track.objects.exclude(sounding=None).annotate(minlev=Min('sounding__min_level')).exclude(minlev__lt=Sounding.MAX_LEVEL):
     print(track)
     simplify(track, 256)
