@@ -1,0 +1,10 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <h1>Track #{{ track.id }}</h1>
+  <dl>
+    <dt>Uploaded on</dt><dd>{{ track.uploaded_on }}</dd>
+    <dt>Vessel</dt><dd>{{ track.vessel }}</dd>
+    <dt>nPoints</dt><dd>{{ track.npoints }}</dd>
+  </dl>
+{% endblock %}

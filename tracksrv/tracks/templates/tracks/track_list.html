@@ -1,0 +1,29 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <h1>Tracks</h1>
+  {% if track_list %}
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Vessel</th>
+        <th>uploaded</th>
+        <th>nPoints</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for track in track_list %}
+      <tr>
+        <th><a href="/tracks/{{ track.id }}">{{ track.id }}</a></th>
+        <td><a href="/vessel/{{ track.vessel.id }}">{{ track.vessel.name }}</a></td>
+        <td>{{ track.uploaded_on }}</td>
+        <td>{{ track.npoints }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No tracks to view.</p>
+  {% endif %} 
+{% endblock %}

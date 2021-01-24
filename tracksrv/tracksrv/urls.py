@@ -16,10 +16,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include,path
 
+from tracks.views import TrackListView,TrackDetailView
+
 urlpatterns = [
-    path('1.0/tracks/', include('tracks.urls')),
-    path('tracks/', include('tracks.html_urls')),
-    path('1.0/tiles/', include('tiles.urls')),
+    path('mytracks/', TrackListView.as_view(), name='my-tracks'),
+    path('tracks/<int:pk>', TrackDetailView.as_view()),
+#    path('1.0/tracks/', include('tracks.urls')),
+#    path('1.0/tiles/', include('tiles.urls')),
     path('admin/', admin.site.urls),
 ]
 

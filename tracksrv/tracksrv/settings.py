@@ -129,7 +129,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 # Redirect to tracks view after login (Default redirects to /accounts/profile/)
-LOGIN_REDIRECT_URL = '/1.0/tracks'
+LOGIN_REDIRECT_URL = '/mytracks'
 
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = '25'
