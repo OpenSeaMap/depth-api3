@@ -72,12 +72,22 @@ def recurseDown(z,x,y):
 
   return None
 
-def simplify(track,grid):
+def simplifyFull(track,grid):
 #  Sounding.objects.filter(track=track).update(min_level=Sounding.MAX_LEVEL+1)
   recurseDown(0,0,0)
+
+def simplifyFast(track,grid):
+#  Sounding.objects.filter(track=track).update(min_level=Sounding.MAX_LEVEL+1)
+  total = 0
+  for level in range(0,Sounding.MAX_LEVEL):
+    print(level)
+    ids = (x['id'] for x in Sounding.objects.filter(min_level__gte=level).order_by('?')[:grid-total].values('id'))
+    Sounding.objects.filter(id__in=ids).update(min_level=level)
+    total = grid
+    grid *= 4
 
 if __name__ == "__main__":
   print("Simplify")
   for track in Track.objects.exclude(sounding=None).annotate(minlev=Min('sounding__min_level')).exclude(minlev__lt=Sounding.MAX_LEVEL):
     print(track)
-    simplify(track, 256)
+    simplifyFast(track, 256)
