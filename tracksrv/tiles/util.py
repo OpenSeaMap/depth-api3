@@ -4,6 +4,7 @@ utility functions
 
 import io
 import threading
+import time
 
 from matplotlib.figure import Figure
 from matplotlib.axes   import Axes

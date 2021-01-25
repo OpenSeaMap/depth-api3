@@ -67,6 +67,6 @@ class Track(models.Model):
 class Sounding(models.Model):
     MAX_LEVEL = 17
 
-    coord = models.PointField(dim=3)
+    coord = models.PointField(dim=3,db_index=True)
     min_level = models.PositiveSmallIntegerField(db_index=True,default=MAX_LEVEL)
     track = models.ForeignKey(Track, on_delete=models.CASCADE)

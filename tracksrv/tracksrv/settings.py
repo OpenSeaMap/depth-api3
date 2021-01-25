@@ -133,3 +133,17 @@ LOGIN_REDIRECT_URL = '/mytracks'
 
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = '25'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+}
