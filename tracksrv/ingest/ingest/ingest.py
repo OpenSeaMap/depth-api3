@@ -49,7 +49,7 @@ def filter_GPX(f):
       if event == "start" and inPt:
         try:
           d = float('0' + elem.text.lstrip().rstrip())
-          yield Point(lon,lat,d,srid=4326)
+          yield Point(lon,lat,srid=4326),d
         except:
           pass
 
@@ -73,7 +73,7 @@ def filter_NMEA(f,osm=True):
           pass
       elif msg.sentence_type == 'DPT': # depth transducer
         if msg.depth is not None:
-          yield Point(lon,lat,float(msg.depth + msg.offset),srid=4326)
+          yield Point(lon,lat,srid=4326),float(msg.depth + msg.offset)
         else:
 #         logger.debug('found invalid DPT message')
           pass
@@ -91,7 +91,7 @@ def do_ingest(track,trkPts):
   # to avoid holding several million points in memory, add the points in batches of 10000
   BATCH_SIZE = 10000
 
-  objs = (Sounding(track=track, coord=p.transform(3857,clone=True)) for p in trkPts)
+  objs = (Sounding(track=track, coord=p.transform(3857,clone=True), z=z) for p,z in trkPts)
   while True:
       batch = list(islice(objs, BATCH_SIZE))
       if not batch:

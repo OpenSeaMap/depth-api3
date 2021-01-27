@@ -66,7 +66,7 @@ def recurseDown(z,x,y):
           p_min = p
 
     else:
-      p_min = pts.annotate(z=getZ('coord')).annotate(mz=Min('z')).filter(mz=F('z')).values('id','z')[0]
+      p_min = pts.annotate(mz=Min('z')).filter(mz=F('z')).values('id','z')[0]
 
     logger.debug("(%d) min took %f ms",z,prf.done()*1000.)
 
