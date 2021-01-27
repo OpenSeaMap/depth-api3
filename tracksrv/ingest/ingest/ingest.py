@@ -9,10 +9,15 @@ each such track is imported
 import subprocess
 import xml.etree.ElementTree as ET
 from itertools import islice
+import logging
+
+logger = logging.getLogger(__name__)
 
 import django
-from django.contrib.gis.geos import Point
 django.setup()
+
+from django.db import connection
+from django.contrib.gis.geos import Point
 from django.core.mail import send_mail
 
 import pynmea2
@@ -100,40 +105,65 @@ def do_ingest(track,trkPts):
 
 if __name__ == "__main__":
 
-  try:
-    send_mail(
-      'Ingest is starting',
-      'The ingest process has started.',
-      'ingest@fermi.franken.de',       # FROM
-      ['openseamap@fermi.franken.de'], # TO
-      fail_silently=False,
-    )
-  except:
-    pass
+  if Track.objects.filter(sounding=None).exists():
 
-  # all tracks that do not have any soundings yet
-  for track in Track.objects.filter(sounding=None):
-    print(track)
-    if track.format == Track.FileFormat.GPX:
-      it = filter_GPX(track.rawfile)
-    elif track.format == Track.FileFormat.NMEA0183:
-      it = filter_NMEA(track.rawfile,osm=False)
-    elif track.format == Track.FileFormat.NMEA0183_OSM:
-      it = filter_NMEA(track.rawfile,osm=True)
-    else:
-      it = () # emtpy iterator -> no points
-    do_ingest(track,it)
-    if it != ():
-      subject = 'Done ingesting {}'.format(str(track))
-      body = """The track contained {} points
-      """.format(Sounding.objects.filter(track=track).count())
+    try:
+      send_mail(
+        'Ingest is starting',
+        'The ingest process has started.',
+        'ingest@fermi.franken.de',       # FROM
+        ['openseamap@fermi.franken.de'], # TO
+        fail_silently=False,
+      )
+    except:
+      pass
 
-      try:
-        send_mail(
-          subject,body,
-          'ingest@fermi.franken.de',       # FROM
-          ['openseamap@fermi.franken.de'], # TO
-          fail_silently=False,
-        )
-      except:
-        pass
+    # drop all indices (except the primary) beforehand
+    with connection.cursor() as cursor:
+      logger.debug("dropping index")
+      cursor.execute("""
+        DROP INDEX tracks_sounding_z_8af7739d;
+        DROP INDEX tracks_sounding_coord_id;
+        DROP INDEX tracks_sounding_min_level_744b912d;
+        DROP INDEX tracks_sounding_track_id_e77bcf1c;
+      """)
+
+    try:
+      # all tracks that do not have any soundings yet
+      for track in Track.objects.filter(sounding=None):
+        logger.info("start ingest %s",str(track))
+        if track.format == Track.FileFormat.GPX:
+          it = filter_GPX(track.rawfile)
+        elif track.format == Track.FileFormat.NMEA0183:
+          it = filter_NMEA(track.rawfile,osm=False)
+        elif track.format == Track.FileFormat.NMEA0183_OSM:
+          it = filter_NMEA(track.rawfile,osm=True)
+        else:
+          it = () # emtpy iterator -> no points
+        do_ingest(track,it)
+        if it != ():
+          subject = 'Done ingesting {}'.format(str(track))
+          body = """The track contained {} points
+          """.format(Sounding.objects.filter(track=track).count())
+
+          loggger.info("done ingest track %s",str(track))
+          try:
+            send_mail(
+              subject,body,
+              'ingest@fermi.franken.de',       # FROM
+              ['openseamap@fermi.franken.de'], # TO
+              fail_silently=False,
+            )
+          except:
+            pass
+
+    finally:
+      # re-create min_level index
+      with connection.cursor() as cursor:
+        logger.debug("recreating index")
+        cursor.execute("""
+          CREATE INDEX tracks_sounding_z_8af7739d ON tracks_sounding (z);
+          CREATE INDEX tracks_sounding_coord_id ON tracks_sounding USING GIST (coord GIST_GEOMETRY_OPS_ND);
+          CREATE INDEX tracks_sounding_track_id_e77bcf1c ON tracks_sounding (track_id);
+          CREATE INDEX tracks_sounding_min_level_744b912d ON tracks_sounding (min_level);
+          """)
