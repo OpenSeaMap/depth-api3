@@ -22,8 +22,9 @@ from django.contrib.gis.geos import Point, GEOSGeometry, Polygon
 #from django.contrib.gis.measure import Distance
 from django.contrib.gis.db.models.functions import GeoFunc
 from django.db.models.fields import FloatField
+from django.utils import timezone
 
-from tracks.models import Track,Sounding
+from tracks.models import Track,Sounding,ProcessingStatus
 
 import tiles.transform as tf
 from tiles.util import tile_to_3857,Perf
@@ -34,17 +35,21 @@ def q(z,x,y):
 
   return Sounding.objects.filter(track=track, coord__coveredby=bbox)
 
-def progress(z,x,y,p,t_rem):
-  eta_s = time.localtime(time.time()+t_rem)
-  eta_str = time.strftime("%c",eta_s)
-
-  eta_m = t_rem//60
-  t_rem -= eta_m*60
-  eta_h = eta_m//60
-  eta_m -= eta_h*60
-
+def printProg(z,x,y,s):
   print('                                                                                    ',end='\r')
-  print('z=%d, x=%d, y=%d (%2.1f%%) ETA=%02d:%02d:%02d (%s)'%(z,x,y,p,eta_h,eta_m,t_rem,eta_str),end='\r')
+  print('z=%d, x=%d, y=%d %s'%(z,x,y,s),end='\r')
+
+#def progress(z,x,y,p,t_rem):
+#  eta_s = time.localtime(time.time()+t_rem)
+#  eta_str = time.strftime("%c",eta_s)
+
+#  eta_m = t_rem//60
+#  t_rem -= eta_m*60
+#  eta_h = eta_m//60
+#  eta_m -= eta_h*60
+
+#  print('                                                                                    ',end='\r')
+#  print('z=%d, x=%d, y=%d (%2.1f%%) ETA=%02d:%02d:%02d (%s)'%(z,x,y,p,eta_h,eta_m,t_rem,eta_str),end='\r')
 
 SUBDIV = 2
 
@@ -66,27 +71,28 @@ def minTile(context,z,x,y):
 
   else:
     pts = q(z,x,y)
-    context['nProcessed'] += pts.count()
+    context['ps'].incProgress(pts.count())
     minimal = pts.annotate(mz=Min('z')).filter(mz=F('z')).values('id','z')[0]
 
   # we now have minimal
   Sounding.objects.filter(id=minimal['id']).update(min_level=z-SUBDIV)
 
-  if z == 15 and context['nProcessed']>0:
-    f = context['nProcessed']/context['nTotal']
-    eta_in_s = (time.time()-context['start'])/f*(1-f)
-
-    progress(z,x,y,100.*f,eta_in_s)
+  if z == 15:
+    printProg(z,x,y,str(context['ps']))
 
   return minimal
 
 def simplifyFull(track,grid):
   context={}
   Sounding.objects.filter(track=track).update(min_level=Sounding.MAX_LEVEL+1)
-  context['nTotal'] = Sounding.objects.filter(track=track).count()
-  context['nProcessed'] = 0
-  context['start'] = time.time()
+  context['ps'] = ProcessingStatus(name="simplification",
+                                    track=track,
+                                    toProcess=Sounding.objects.filter(track=track).count())
+  context['ps'].save()
+
   minTile(context,0,0,0)
+
+  context['ps'].end()
 
 if __name__ == "__main__":
   print("Simplify")
