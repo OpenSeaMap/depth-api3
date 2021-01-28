@@ -9,6 +9,7 @@
         <th>#</th>
         <th>Vessel</th>
         <th>uploaded</th>
+        <th>by</th>
         <th>nPoints</th>
       </tr>
     </thead>
@@ -16,8 +17,9 @@
       {% for track in track_list %}
       <tr>
         <th><a href="/tracks/{{ track.id }}">{{ track.id }}</a></th>
-        <td><a href="/vessel/{{ track.vessel.id }}">{{ track.vessel.name }}</a></td>
+        <td><a href="/vessels/{{ track.vessel.id }}">{{ track.vessel.name }}</a></td>
         <td>{{ track.uploaded_on }}</td>
+        <td>{{ track.submitter }}</td>
         <td>{{ track.npoints }}</td>
       </tr>
       {% endfor %}
