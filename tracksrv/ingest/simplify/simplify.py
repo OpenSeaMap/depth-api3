@@ -10,6 +10,7 @@ import xml.etree.ElementTree as ET
 from itertools import islice
 import logging
 import time
+import argparse
 
 logger = logging.getLogger(__name__)
 
@@ -36,25 +37,11 @@ def q(z,x,y):
   return Sounding.objects.filter(track=track, coord__coveredby=bbox)
 
 def printProg(z,x,y,s):
-  print('                                                                                    ',end='\r')
+  print('                                                                                                ',end='\r')
   print('z=%d, x=%d, y=%d %s'%(z,x,y,s),end='\r')
 
-#def progress(z,x,y,p,t_rem):
-#  eta_s = time.localtime(time.time()+t_rem)
-#  eta_str = time.strftime("%c",eta_s)
-
-#  eta_m = t_rem//60
-#  t_rem -= eta_m*60
-#  eta_h = eta_m//60
-#  eta_m -= eta_h*60
-
-#  print('                                                                                    ',end='\r')
-#  print('z=%d, x=%d, y=%d (%2.1f%%) ETA=%02d:%02d:%02d (%s)'%(z,x,y,p,eta_h,eta_m,t_rem,eta_str),end='\r')
-
-SUBDIV = 2
-
 def minTile(context,z,x,y):
-  if z < Sounding.MAX_LEVEL+SUBDIV:
+  if z < Sounding.MAX_LEVEL+context['subdiv']:
 
     c = [[2*x,2*y],[2*x+1,2*y],[2*x,2*y+1],[2*x+1,2*y+1]]
     haspts = [[q(z+1,x,y).exists(),x,y] for x,y in c] # could do in parallel
@@ -75,43 +62,62 @@ def minTile(context,z,x,y):
     minimal = pts.annotate(mz=Min('z')).filter(mz=F('z')).values('id','z')[0]
 
   # we now have minimal
-  Sounding.objects.filter(id=minimal['id']).update(min_level=z-SUBDIV)
+  Sounding.objects.filter(id=minimal['id']).update(min_level=z-context['subdiv'])
 
   if z == 15:
     printProg(z,x,y,str(context['ps']))
 
   return minimal
 
-def simplifyFull(track,grid):
-  context={}
-  Sounding.objects.filter(track=track).update(min_level=Sounding.MAX_LEVEL+1)
+def simplifyFull(track,subdiv,maxlev):
+  context={'subdiv':subdiv,'maxlev':maxlev}
   context['ps'] = ProcessingStatus(name="simplification",
                                     track=track,
                                     toProcess=Sounding.objects.filter(track=track).count())
   context['ps'].save()
 
+  Sounding.objects.filter(track=track).update(min_level=maxlev+1)
   minTile(context,0,0,0)
 
   context['ps'].end()
 
 if __name__ == "__main__":
-  print("Simplify")
-  tracks = list(Track.objects.exclude(sounding=None).annotate(minlev=Min('sounding__min_level')).exclude(minlev__lt=Sounding.MAX_LEVEL))
+  parser = argparse.ArgumentParser(description='Process soundings to limit number of soundings per tile.')
+  parser.add_argument('-f', '--force', dest='force', action='store_true',
+                      help='process track even if it has already been processed')
+  parser.add_argument('-s', '--subdiv', dest='subdiv', action='store', type=int, default=2,
+                      help='subdivision level')
+  parser.add_argument('-m', '--maxlevel', dest='maxlev', action='store', type=int, default=Sounding.MAX_LEVEL,
+                      help='maximum level')
+  parser.add_argument('tracks', metavar='i', type=int, nargs='*',
+                    help='a list of tracks to process. Leave empty for all tracks.')
 
-  # drop min_level index to avoid re-indexing during write operations
-  with connection.cursor() as cursor:
-    logger.debug("dropping index")
-    cursor.execute("DROP INDEX tracks_sounding_min_level_744b912d")
+  args = parser.parse_args()
 
-  try:
-    for track in tracks:
-      logger.info("simplifying track %s",str(track))
-      p = Perf()
-      simplifyFull(track, 256)
-      logger.info("simplification took %f s",p.done())
+  tracks = Track.objects.exclude(sounding=None).annotate(minlev=Min('sounding__min_level'))
+  if not args.force:
+    tracks = tracks.exclude(minlev__lt=Sounding.MAX_LEVEL)
+  
+  if len(args.tracks) > 0:
+    tracks = tracks.filter(id__in=args.tracks)
 
-  finally:
-    # re-create min_level index
+  if tracks.count() > 0:
+    print("Processing tracks: %s"%[t.id for t in tracks])
+
+    # drop min_level index to avoid re-indexing during write operations
     with connection.cursor() as cursor:
-      logger.debug("recreating index")
-      cursor.execute("CREATE INDEX tracks_sounding_min_level_744b912d ON tracks_sounding (min_level)")
+      logger.debug("dropping index")
+      cursor.execute("DROP INDEX tracks_sounding_min_level_744b912d")
+
+    try:
+      for track in tracks:
+        logger.info("simplifying track %s",str(track))
+        p = Perf()
+        simplifyFull(track, args.subdiv,args.maxlev)
+        logger.info("\nsimplification took %f s",p.done())
+
+    finally:
+      # re-create min_level index
+      with connection.cursor() as cursor:
+        logger.debug("recreating index")
+        cursor.execute("CREATE INDEX tracks_sounding_min_level_744b912d ON tracks_sounding (min_level)")
