@@ -15,8 +15,9 @@ EQUATOR = 40075016.68557849
 
 def tile_to_3857(z,x,y):
   tpz = 2**z
-  x =  x/tpz*EQUATOR - EQUATOR/2
-  y = -y/tpz*EQUATOR + EQUATOR/2
+  m = EQUATOR / tpz
+  x =  x*m - EQUATOR/2
+  y = -y*m + EQUATOR/2
   return x,y
 
 def setup_fig_ax(z,xi,yi):
