@@ -47,7 +47,7 @@ def _gettile(z,xi,yi,func):
     pts      = np.empty((npts,2),float)
     pts[:,0] = np.fromiter((p.coord.transform(3857,clone=True).x for p in pts_q), float)
     pts[:,1] = np.fromiter((p.coord.transform(3857,clone=True).y for p in pts_q), float)
-    depth    = np.fromiter((p.coord.z for p in pts_q),float)
+    depth    = np.fromiter((p.z for p in pts_q),float)
 
     try:
         s = func(z,xi,yi,pts,depth)
