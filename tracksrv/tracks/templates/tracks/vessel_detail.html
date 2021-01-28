@@ -1,0 +1,10 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <h1>{{ vessel.name }}</h1>
+  <h2>Vessel #{{ vessel.id }}</h2>
+  <dl>
+    <dt>Uploaded on</dt><dd>{{ vessel.created_on }}</dd>
+    <dt>Length/Beam/Draft/Height</dt><dd>{{ vessel.length }}/{{ vessel.beam }}/{{ vessel.draft }}/{{ vessel.height }}</dd>
+  </dl>
+{% endblock %}
