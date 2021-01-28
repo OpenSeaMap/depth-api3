@@ -19,11 +19,17 @@ django.setup()
 from django.db import connection
 from django.contrib.gis.geos import Point
 from django.core.mail import send_mail
+from django.utils import timezone
 
 import pynmea2
 
 
-from tracks.models import Track,Sounding
+from tracks.models import Track,Sounding,ProcessingStatus
+
+def progPrint(s):
+  print('                                                                                    ',end='\r')
+  print(s,end='\r')
+
 
 def filter_GPX(f):
 
@@ -96,12 +102,19 @@ def do_ingest(track,trkPts):
   # to avoid holding several million points in memory, add the points in batches of 10000
   BATCH_SIZE = 10000
 
+  ps = ProcessingStatus(name="ingest",track=track)
+  ps.save()
+
   objs = (Sounding(track=track, coord=p.transform(3857,clone=True), z=z) for p,z in trkPts)
   while True:
       batch = list(islice(objs, BATCH_SIZE))
       if not batch:
           break
-      Sounding.objects.bulk_create(batch, BATCH_SIZE)
+      b = Sounding.objects.bulk_create(batch, BATCH_SIZE)
+      ps.incProgress(len(b))
+      progPrint(str(ps))
+
+  ps.end()
 
 if __name__ == "__main__":
 
@@ -132,6 +145,7 @@ if __name__ == "__main__":
       # all tracks that do not have any soundings yet
       for track in Track.objects.filter(sounding=None):
         logger.info("start ingest %s",str(track))
+
         if track.format == Track.FileFormat.GPX:
           it = filter_GPX(track.rawfile)
         elif track.format == Track.FileFormat.NMEA0183:
@@ -140,6 +154,7 @@ if __name__ == "__main__":
           it = filter_NMEA(track.rawfile,osm=True)
         else:
           it = () # emtpy iterator -> no points
+
         do_ingest(track,it)
         if it != ():
           subject = 'Done ingesting {}'.format(str(track))

@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django.utils import timezone
 from django.contrib.gis.db import models
 from django.utils.translation import gettext_lazy as _
@@ -63,6 +64,57 @@ class Track(models.Model):
     quality = models.IntegerField('a track quality measure from 0 (unusable) to 100 (perfect)', default=0)
     def __str__(self):
         return '[Track %d] (on %s %s, submitted by %s on %s)' % (self.id,Vessel.VesselType(self.vessel.vtype).label,self.vessel.name,str(self.submitter),self.uploaded_on)
+
+class ProcessingStatus(models.Model):
+    name = models.CharField(max_length=20)
+    toProcess = models.IntegerField(null=True)
+    nProcessed = models.IntegerField(default=0)
+    start_time = models.DateTimeField('date and time of start of operation',default=timezone.now)
+    last_update = models.DateTimeField('date and time of last update',default=timezone.now)
+    end_time = models.DateTimeField('date and time of start of operation',null=True)
+    track = models.ForeignKey(Track, on_delete=models.CASCADE)
+
+    def setProgress(self, nProcessed=None):
+        self.last_update = timezone.now()
+        if nProcessed is not None:
+            self.nProcessed = nProcessed
+        self.save()
+
+    def incProgress(self, nProcessed):
+        self.setProgress(self.nProcessed + nProcessed)
+
+    def end(self):
+        self.last_update = timezone.now()
+        self.end_time    = self.last_update
+        self.save()
+
+    def percent_done(self):
+        if self.toProcess is not None and self.toProcess > 0:
+            return 100. * self.nProcessed / self.toProcess
+
+    def time_left(self):
+        p = self.percent_done()
+        if p is not None:
+            if p >= 100:
+                return timedelta(seconds=0)
+            else:
+                return (timezone.now() - self.start_time) * (100-p)/p
+
+    def ETA(self):
+        tl = self.time_left()
+        if tl is not None:
+            return timezone.now() + tl
+
+    def __str__(self):
+        tl = self.time_left()
+        if tl is not None:
+
+            p = self.percent_done()
+            assert p is not None
+            return '%2.2f%% %s (%s)'%(p,tl,timezone.localtime(self.ETA()))
+        else:
+            td = timezone.now()-self.start_time
+            return 'processed=%d (%1.0f / min)'%(self.nProcessed,self.nProcessed * 60 / td.total_seconds())
 
 class Sounding(models.Model):
     MAX_LEVEL = 17
