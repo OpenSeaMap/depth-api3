@@ -146,7 +146,7 @@ if __name__ == "__main__":
           body = """The track contained {} points
           """.format(Sounding.objects.filter(track=track).count())
 
-          loggger.info("done ingest track %s",str(track))
+          logger.info("done ingest track %s",str(track))
           try:
             send_mail(
               subject,body,
