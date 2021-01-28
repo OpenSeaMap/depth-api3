@@ -35,8 +35,8 @@ class TrackDetailView(PermissionRequiredMixin,generic.DetailView):
     def has_permission(self):
         return self.get_object().submitter == self.request.user
 
-#    def get_queryset(self):
-#        return super().get_queryset().annotate(npoints=Count('sounding'))
+    def get_queryset(self):
+        return super(TrackDetailView,self).get_queryset().annotate(npoints=Count('sounding'))
 
 
 
