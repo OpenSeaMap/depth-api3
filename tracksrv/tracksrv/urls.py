@@ -22,7 +22,7 @@ urlpatterns = [
     path('mytracks/', TrackListView.as_view(), name='my-tracks'),
     path('tracks/<int:pk>', TrackDetailView.as_view()),
 #    path('1.0/tracks/', include('tracks.urls')),
-#    path('1.0/tiles/', include('tiles.urls')),
+    path('1.0/tiles/', include('tiles.urls')),
     path('admin/', admin.site.urls),
 ]
 
