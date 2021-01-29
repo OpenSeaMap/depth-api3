@@ -23,13 +23,46 @@ from django.utils import timezone
 
 import pynmea2
 
-
 from tracks.models import Track,Sounding,ProcessingStatus
 
 def progPrint(s):
   print('                                                                                    ',end='\r')
   print(s,end='\r')
 
+def filter_CSV(f):
+  """read in a CSV file, separated by semicolon.
+  The first line needs to contain the column names "lat","lon","dbs","time" (in any order)
+  i.e.
+  lat;lon;dbs;time
+
+  37.312124;26.56452829;5.35;2019-09-23 14:22:00.601
+  37.312124;26.56452829;5.35;2019-09-23 14:22:00.601
+  37.312124;26.56452829;5.35;2019-09-23 14:22:00.601
+
+  empty lines are allowed; lines starting with "#" are ignored.
+  """
+
+  headers = None
+  for line in f:
+    line = line.rstrip()
+
+    if len(line) == 0 or line[0] == '#':
+      continue # ignore this line
+
+    x = line.split(b';')
+    if headers is None:
+      logger.debug(x)
+      if not(b'lat' in x and b'lon' in x and b'dbs' in x):
+        logger.error('malformed header line in input file')
+        raise ValueError
+
+      headers = {}
+      for i in range(len(x)):
+        headers[x[i]] = i
+
+      continue
+
+    yield Point(float(x[headers[b'lon']]),float(x[headers[b'lat']]),srid=4326), float(x[headers[b'dbs']])
 
 def filter_GPX(f):
 
@@ -110,8 +143,8 @@ def do_ingest(track,trkPts):
       batch = list(islice(objs, BATCH_SIZE))
       if not batch:
           break
-      b = Sounding.objects.bulk_create(batch, BATCH_SIZE)
-      ps.incProgress(len(b))
+      Sounding.objects.bulk_create(batch, BATCH_SIZE)
+      ps.incProgress(len(batch))
       progPrint(str(ps))
 
   ps.end()
@@ -152,6 +185,8 @@ if __name__ == "__main__":
           it = filter_NMEA(track.rawfile,osm=False)
         elif track.format == Track.FileFormat.NMEA0183_OSM:
           it = filter_NMEA(track.rawfile,osm=True)
+        elif track.format == Track.FileFormat.TAGGED_CSV:
+          it = filter_CSV(track.rawfile)
         else:
           it = () # emtpy iterator -> no points
 

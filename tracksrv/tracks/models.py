@@ -53,6 +53,7 @@ class Track(models.Model):
         GPX = 'GPX'
         NMEA0183 = '183', _('NMEA 0183')
         NMEA0183_OSM = 'OSM', _('NMEA 0183 with OSM timestamps')
+        TAGGED_CSV = 'CSV', _('CSV with column headers')
 
     vessel = models.ForeignKey(Vessel, on_delete=models.CASCADE)
     submitter = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
