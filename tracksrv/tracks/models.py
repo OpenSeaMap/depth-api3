@@ -135,11 +135,22 @@ class ProcessingStatus(models.Model):
 
             p = self.percent_done()
             assert p is not None
-            return '%2.2f%% %s (%s)'%(p,tl,timezone.localtime(self.ETA()))
+            status = '%2.2f%%'%(p)
+            if tl > timedelta(seconds=0):
+                status += '%s'%(tl)
+            status += ' (ETA %s) '%(timezone.localtime(self.ETA()))
         else:
             td = round_timedelta(timezone.now()-self.start_time)
 
-            return 'processed=%d (%1.0f / min)'%(self.nProcessed,self.nProcessed * 60 / td.total_seconds())
+            status = 'processed=%d (%1.0f / min)'%(self.nProcessed,self.nProcessed * 60 / td.total_seconds())
+
+        if self.end_time is None:
+            last_update = '({})'.format(round_timedelta(self.last_update))
+        else:
+            last_update = '(ended {})'.format(round_timedelta(self.end_time))
+
+        return '{} #{}: {} {}'.format(self.name, self.track_id, status, last_update)
+
 
 class Sounding(models.Model):
     MAX_LEVEL = 17
