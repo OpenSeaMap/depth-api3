@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'languages', # models for languages and regions, for user management
 ]
 
 MIDDLEWARE = [
