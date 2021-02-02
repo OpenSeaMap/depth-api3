@@ -33,6 +33,8 @@ ALLOWED_HOSTS = ['lightning','localhost']
 
 INSTALLED_APPS = [
     'tracks.apps.TracksConfig',
+    'vessels.apps.VesselsConfig',
+    'users.apps.UsersConfig',
     'django.contrib.admin',
     'django.contrib.gis',
     'django.contrib.auth',
