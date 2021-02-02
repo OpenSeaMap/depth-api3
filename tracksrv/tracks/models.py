@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta,datetime
 from django.utils import timezone
 from django.contrib.gis.db import models
 from django.utils.translation import gettext_lazy as _
@@ -151,6 +151,9 @@ class ProcessingStatus(models.Model):
 
         return '{} #{}: {} {}'.format(self.name, self.track_id, status, last_update)
 
+    class Meta:
+        ordering = ['-last_update']
+        verbose_name_plural = 'processing statuses'
 
 class Sounding(models.Model):
     MAX_LEVEL = 17
