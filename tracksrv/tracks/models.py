@@ -81,8 +81,12 @@ class Track(models.Model):
         return '[Track %d] (on %s %s, submitted by %s on %s)' % (self.id,Vessel.VesselType(self.vessel.vtype).label,self.vessel.name,str(self.submitter),self.uploaded_on)
 
 def round_timedelta(delta):
-    td = delta + timedelta(microseconds=500000)
-    return td - timedelta(microseconds=td.microseconds)
+    if isinstance(delta, datetime):
+        delta += timedelta(microseconds = delta.microsecond-500000)
+    elif isinstance(delta, timedelta):
+        delta += timedelta(microseconds = delta.microseconds-500000)
+
+    return delta
 
 class ProcessingStatus(models.Model):
     name = models.CharField(max_length=20)
