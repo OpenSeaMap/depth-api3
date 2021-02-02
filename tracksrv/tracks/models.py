@@ -113,7 +113,7 @@ class ProcessingStatus(models.Model):
 
     def percent_done(self):
         if self.toProcess is not None and self.toProcess > 0:
-            return 100. * self.nProcessed / self.toProcess
+            return 100. * min(self.nProcessed,self.toProcess) / self.toProcess
 
     def time_left(self):
         p = self.percent_done()
