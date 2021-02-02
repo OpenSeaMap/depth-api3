@@ -66,13 +66,17 @@ class Track(models.Model):
     def __str__(self):
         return '[Track %d] (on %s %s, submitted by %s on %s)' % (self.id,Vessel.VesselType(self.vessel.vtype).label,self.vessel.name,str(self.submitter),self.uploaded_on)
 
+def round_timedelta(delta):
+    td = delta + timedelta(microseconds=500000)
+    return td - timedelta(microseconds=td.microseconds)
+
 class ProcessingStatus(models.Model):
     name = models.CharField(max_length=20)
     toProcess = models.IntegerField(null=True)
     nProcessed = models.IntegerField(default=0)
     start_time = models.DateTimeField('date and time of start of operation',default=timezone.now)
     last_update = models.DateTimeField('date and time of last update',default=timezone.now)
-    end_time = models.DateTimeField('date and time of start of operation',null=True)
+    end_time = models.DateTimeField('date and time of end of operation',null=True)
     track = models.ForeignKey(Track, on_delete=models.CASCADE)
 
     def setProgress(self, nProcessed=None):
@@ -97,9 +101,10 @@ class ProcessingStatus(models.Model):
         p = self.percent_done()
         if p is not None:
             if p >= 100:
-                return timedelta(seconds=0)
+                td = timedelta(seconds=0)
             else:
-                return (timezone.now() - self.start_time) * (100-p)/p
+                td = (timezone.now() - self.start_time) * (100-p)/p
+            return round_timedelta(td)
 
     def ETA(self):
         tl = self.time_left()
@@ -114,7 +119,8 @@ class ProcessingStatus(models.Model):
             assert p is not None
             return '%2.2f%% %s (%s)'%(p,tl,timezone.localtime(self.ETA()))
         else:
-            td = timezone.now()-self.start_time
+            td = round_timedelta(timezone.now()-self.start_time)
+
             return 'processed=%d (%1.0f / min)'%(self.nProcessed,self.nProcessed * 60 / td.total_seconds())
 
 class Sounding(models.Model):
