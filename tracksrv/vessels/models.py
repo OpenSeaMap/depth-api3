@@ -2,6 +2,7 @@ from django.utils import timezone
 from django.contrib.gis.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
+from licenses.models import License
 
 class Vessel(models.Model):
     class MeasurementType(models.TextChoices):
@@ -19,6 +20,7 @@ class Vessel(models.Model):
 
     submitter = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField('the vessel name',max_length=128)
+    license = models.ForeignKey(License, on_delete=models.SET_NULL, null=True)
     created_on = models.DateField('date created in database',default=timezone.now)
     length = models.FloatField('length in meters')
     beam = models.FloatField('beam in meters')

@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'tracks.apps.TracksConfig',
     'vessels.apps.VesselsConfig',
     'users.apps.UsersConfig',
+    'licenses.apps.LicensesConfig',
     'django.contrib.admin',
     'django.contrib.gis',
     'django.contrib.auth',

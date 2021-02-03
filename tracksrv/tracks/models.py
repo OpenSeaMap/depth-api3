@@ -4,6 +4,7 @@ from django.contrib.gis.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
 from vessels.models import Vessel
+from licenses.models import License
 
 class Track(models.Model):
     class ProcessingStatus(models.TextChoices):
@@ -20,6 +21,7 @@ class Track(models.Model):
 
     vessel = models.ForeignKey(Vessel, on_delete=models.CASCADE)
     submitter = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    license = models.ForeignKey(License, on_delete=models.SET_NULL, null=True)
     uploaded_on = models.DateTimeField('date uploaded',default=timezone.now)
     processing_status = models.CharField(max_length=3, blank=True, choices=ProcessingStatus.choices, default=ProcessingStatus.NEW)
     rawfile = models.FileField(upload_to='raw_tracks/')
