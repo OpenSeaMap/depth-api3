@@ -19,6 +19,7 @@ from django.urls import include,path
 from rest_framework import routers
 from tracks import views as trackviews
 from vessels import views as vesselviews
+from licenses import views as licenseviews
 from users import views as userviews
 
 #import debug_toolbar
@@ -26,6 +27,7 @@ from users import views as userviews
 router = routers.DefaultRouter()
 router.register(r'tracks', trackviews.TrackViewSet)
 router.register(r'vessels', vesselviews.VesselViewSet)
+router.register(r'licenses', licenseviews.LicenseViewSet)
 router.register(r'users', userviews.UserViewSet)
 router.register(r'authusers', userviews.AuthUserViewSet)
 
