@@ -3,7 +3,10 @@ from .models import Vessel
 from rest_framework import serializers
 
 class VesselSerializer(serializers.HyperlinkedModelSerializer):
+#    id = serializers.HyperlinkedRelatedField(
+#        read_only=True,
+#        view_name='vessel-detail'
+#    )
     class Meta:
         model = Vessel
-        fields = ['submitter', 'name', 'created_on', 'length', 'beam', 'draft', 'height',
-            'displacement', 'manufacturer', 'model', 'vtype']
+        fields = '__all__'
