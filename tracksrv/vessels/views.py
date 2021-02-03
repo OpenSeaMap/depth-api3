@@ -1,18 +1,9 @@
-#from django.contrib.auth.decorators import login_required, permission_required
-#from django.contrib.auth.mixins import LoginRequiredMixin,PermissionRequiredMixin
-#from django.shortcuts import get_object_or_404,render
-
-#from django.http import HttpResponse,JsonResponse, FileResponse
-#from django.core.paginator import Paginator
-#from django.db.models import F,Count
-
 from rest_framework import viewsets
 from rest_framework import permissions
+
+from users.permissions import IsSubmitter
 from .serializers import VesselSerializer
-
 from .models import Vessel
-
-#from django.views import generic
 
 class VesselViewSet(viewsets.ModelViewSet):
     """
@@ -20,7 +11,7 @@ class VesselViewSet(viewsets.ModelViewSet):
     """
     queryset = Vessel.objects.all()
     serializer_class = VesselSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsSubmitter]
 
 
 #class VesselDetailView(PermissionRequiredMixin,generic.DetailView):

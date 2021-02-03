@@ -5,13 +5,14 @@ from django.shortcuts import get_object_or_404,render
 from django.http import HttpResponse,JsonResponse, FileResponse
 from django.core.paginator import Paginator
 from django.db.models import F,Count
+from django.views import generic
 
-from .models import Track
 from rest_framework import viewsets
 from rest_framework import permissions
+from users.permissions import IsSubmitter
 from .serializers import TrackSerializer
+from .models import Track
 
-from django.views import generic
 
 class TrackViewSet(viewsets.ModelViewSet):
     """
@@ -19,7 +20,7 @@ class TrackViewSet(viewsets.ModelViewSet):
     """
     queryset = Track.objects.all().order_by('-uploaded_on')
     serializer_class = TrackSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsSubmitter]
 
 
 #class TrackListView(LoginRequiredMixin,generic.ListView):
