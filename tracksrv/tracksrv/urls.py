@@ -16,14 +16,26 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include,path
 
+from rest_framework import routers
+from tracks import views as trackviews
+from vessels import views as vesselviews
+from users import views as userviews
+
 import debug_toolbar
-from tracks.views import TrackListView,TrackDetailView
-from vessels.views import VesselDetailView
+
+router = routers.DefaultRouter()
+router.register(r'tracks', trackviews.TrackViewSet)
+router.register(r'vessels', vesselviews.VesselViewSet)
+router.register(r'users', userviews.UserViewSet)
+router.register(r'authusers', userviews.AuthUserViewSet)
+
 
 urlpatterns = [
-    path('mytracks/', TrackListView.as_view(), name='my-tracks'),
-    path('tracks/<int:pk>', TrackDetailView.as_view()),
-    path('vessels/<int:pk>', VesselDetailView.as_view()),# needs to change
+    path('', include(router.urls)),
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+#    path('mytracks/', TrackListView.as_view(), name='my-tracks'),
+#    path('tracks/<int:pk>', TrackDetailView.as_view()),
+#    path('vessels/<int:pk>', VesselDetailView.as_view()),# needs to change
     path('1.0/tiles/', include('tiles.urls')),
     path('admin/', admin.site.urls),
 ]
