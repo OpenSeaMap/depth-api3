@@ -88,12 +88,14 @@ class ProcessingStatus(models.Model):
             assert p is not None
             status = '%2.2f%%'%(p)
             if tl > timedelta(seconds=0):
-                status += '%s'%(tl)
+                status += ' %s'%(tl)
             status += ' (ETA %s) '%(timezone.localtime(self.ETA()))
         else:
-            td = round_timedelta(timezone.now()-self.start_time)
+            td = round_timedelta(self.last_update-self.start_time)
 
-            status = 'processed=%d (%1.0f / min)'%(self.nProcessed,self.nProcessed * 60 / td.total_seconds())
+            status = 'processed=%d'%self.nProcessed
+            if td.total_seconds() > 0:
+                status += '(%1.0f / min)'%(self.nProcessed * 60 / td.total_seconds())
 
         if self.end_time is None:
             last_update = '({})'.format(round_timedelta(self.last_update))
