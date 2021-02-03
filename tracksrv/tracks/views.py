@@ -5,48 +5,51 @@ from django.shortcuts import get_object_or_404,render
 from django.http import HttpResponse,JsonResponse, FileResponse
 from django.core.paginator import Paginator
 from django.db.models import F,Count
-
-from .models import Track,Sounding,Vessel
-
 from django.views import generic
 
-class TrackListView(LoginRequiredMixin,generic.ListView):
-    model = Track
-    paginate_by = 10
-
-    """override get_queryset to block access to all but the tracks that the user has uploaded.
-    This also gives us a chance to annotate the track with a few helpful fields."""
-    def get_queryset(self):
-        qs = Track.objects
-        if not self.request.user.is_staff:
-            # only staff sees everything
-            qs = qs.filter(submitter=self.request.user)
-        qs = qs.order_by('-uploaded_on').annotate(npoints=Count('sounding'))
-
-        return qs
+from rest_framework import viewsets
+from rest_framework import permissions
+from users.permissions import IsSubmitter
+from .serializers import TrackSerializer
+from .models import Track
 
 
-class TrackDetailView(PermissionRequiredMixin,generic.DetailView):
-    model = Track
-    permission_required = 'tracks.view'
+class TrackViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows tracks to be viewed or edited.
+    """
+    queryset = Track.objects.all().order_by('-uploaded_on')
+    serializer_class = TrackSerializer
+    permission_classes = [permissions.IsAuthenticated, IsSubmitter]
 
-    """check that the user has permission to view the track detail.
-    If they don't, return a 403 Forbidden"""
-    def has_permission(self):
-        return self.get_object().submitter == self.request.user
 
-    def get_queryset(self):
-        return super(TrackDetailView,self).get_queryset().annotate(npoints=Count('sounding'))
+#class TrackListView(LoginRequiredMixin,generic.ListView):
+#    model = Track
+ #   paginate_by = 10
+#
+#    """override get_queryset to block access to all but the tracks that the user has uploaded.
+#    This also gives us a chance to annotate the track with a few helpful fields."""
+#    def get_queryset(self):
+#        qs = Track.objects
+#        if not self.request.user.is_staff:
+#            # only staff sees everything
+#            qs = qs.filter(submitter=self.request.user)
+#        qs = qs.order_by('-uploaded_on').annotate(npoints=Count('sounding'))##
 
-class VesselDetailView(PermissionRequiredMixin,generic.DetailView):
-    model = Vessel
-    permission_required = 'tracks.view'
+#        return qs
 
-    """check that the user has permission to view the track detail.
-    If they don't, return a 403 Forbidden"""
-    def has_permission(self):
-        return self.get_object().submitter == self.request.user
 
+#class TrackDetailView(PermissionRequiredMixin,generic.DetailView):
+#    model = Track
+#    permission_required = 'tracks.view'
+
+#    """check that the user has permission to view the track detail.
+#    If they don't, return a 403 Forbidden"""
+#    def has_permission(self):
+#        return self.get_object().submitter == self.request.user
+
+#    def get_queryset(self):
+#        return super(TrackDetailView,self).get_queryset().annotate(npoints=Count('sounding'))
 
 
 #@permission_required('tracks.view')
