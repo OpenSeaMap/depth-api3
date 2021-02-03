@@ -21,7 +21,7 @@ from tracks import views as trackviews
 from vessels import views as vesselviews
 from users import views as userviews
 
-import debug_toolbar
+#import debug_toolbar
 
 router = routers.DefaultRouter()
 router.register(r'tracks', trackviews.TrackViewSet)
@@ -47,6 +47,6 @@ urlpatterns += [
 ]
 
 # add SQL DEBUG toolbar
-urlpatterns += [
-    path('__debug__/', include(debug_toolbar.urls)),
-]
+#urlpatterns += [
+#    path('__debug__/', include(debug_toolbar.urls)),
+#]
