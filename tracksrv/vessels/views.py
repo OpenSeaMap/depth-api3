@@ -12,13 +12,3 @@ class VesselViewSet(viewsets.ModelViewSet):
     queryset = Vessel.objects.all()
     serializer_class = VesselSerializer
     permission_classes = [permissions.IsAuthenticated, IsSubmitter]
-
-
-#class VesselDetailView(PermissionRequiredMixin,generic.DetailView):
-#    model = Vessel
-#    permission_required = 'tracks.view'
-
-#    """check that the user has permission to view the track detail.
-#    If they don't, return a 403 Forbidden"""
-#    def has_permission(self):
-#        return self.get_object().submitter == self.request.user
