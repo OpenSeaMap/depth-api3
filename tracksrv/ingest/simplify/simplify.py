@@ -94,9 +94,9 @@ if __name__ == "__main__":
 
   args = parser.parse_args()
 
-  tracks = Track.objects.exclude(sounding=None).annotate(minlev=Min('sounding__min_level'))
+  tracks = Track.objects.exclude(sounding=None)
   if not args.force:
-    tracks = tracks.exclude(minlev__lt=Sounding.MAX_LEVEL)
+    tracks = tracks.annotate(minlev=Min('sounding__min_level')).exclude(minlev__lt=Sounding.MAX_LEVEL+1)
   
   if len(args.tracks) > 0:
     tracks = tracks.filter(id__in=args.tracks)
