@@ -39,11 +39,37 @@ def get_figcontents(fig,res,fmt):
   return contents
 
 class Perf():
-    def __init__(self):
-        self.start = time.time()
+  def __enter__(self):
+    self.t = 0
+    self.start = time.time()
+    return self
 
-    def done(self):
-        return time.time()-self.start
+  def __exit__(self, exc_type, exc_value, traceback):
+    self.t = time.time()-self.start
+    return False
 
+class Stat():
+  def __init__(self):
+    self.n = 0
+    self.c = 0
+    self.c2 = 0
+
+  def add(self,x):
+    self.n += 1
+    self.c += x
+    self.c2 += x**2
+
+  def cnt(self):
+    return self.n
+  def avg(self):
+    if self.n == 0:
+      return 0.
+    else:
+      return self.c / self.n
+  def var(self):
+    if self.n == 0:
+      return 0.
+    else:
+      return self.c2 - self.c ** 2
 class NoTile(Exception):
   pass
