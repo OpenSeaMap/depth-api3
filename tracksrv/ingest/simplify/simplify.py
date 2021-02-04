@@ -104,20 +104,8 @@ if __name__ == "__main__":
   if tracks.count() > 0:
     print("Processing tracks: %s"%[t.id for t in tracks])
 
-    # drop min_level index to avoid re-indexing during write operations
-    with connection.cursor() as cursor:
-      logger.debug("dropping index")
-      cursor.execute("DROP INDEX tracks_sounding_min_level_744b912d")
-
-    try:
       for track in tracks:
         logger.info("simplifying track %s",str(track))
         p = Perf()
         simplifyFull(track, args.subdiv,args.maxlev)
-        logger.info("\nsimplification took %f s",p.done())
-
-    finally:
-      # re-create min_level index
-      with connection.cursor() as cursor:
-        logger.debug("recreating index")
-        cursor.execute("CREATE INDEX tracks_sounding_min_level_744b912d ON tracks_sounding (min_level)")
+      logger.info("\nsimplification took %f s",p.t)
