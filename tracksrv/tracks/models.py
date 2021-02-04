@@ -99,9 +99,9 @@ class ProcessingStatus(models.Model):
                 status += '(%1.0f / min)'%(self.nProcessed * 60 / td.total_seconds())
 
         if self.end_time is None:
-            last_update = '({})'.format(round_timedelta(self.last_update))
+            last_update = '({})'.format(timezone.localtime(round_timedelta(self.last_update)))
         else:
-            last_update = '(ended {})'.format(round_timedelta(self.end_time))
+            last_update = '(ended {})'.format(timezone.localtime(round_timedelta(self.end_time)))
 
         return '{} #{}: {} {}'.format(self.name, self.track_id, status, last_update)
 
