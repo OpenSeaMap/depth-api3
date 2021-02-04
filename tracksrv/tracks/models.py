@@ -28,6 +28,7 @@ class Track(models.Model):
     format = models.CharField(max_length=3,blank=True,choices=FileFormat.choices,default="")
     note = models.CharField('optional uploaders\' note',max_length=200,blank=True,default="")
     quality = models.IntegerField('a track quality measure from 0 (unusable) to 100 (perfect)', default=0)
+    nPoints = models.IntegerField('number of points in track', null=True)
     def __str__(self):
         return '[Track %d] (on %s %s, submitted by %s on %s)' % (self.id,Vessel.VesselType(self.vessel.vtype).label,self.vessel.name,str(self.submitter),self.uploaded_on)
 

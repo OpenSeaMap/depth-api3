@@ -148,6 +148,8 @@ def do_ingest(track,trkPts):
       progPrint(str(ps))
 
   ps.end()
+  track.nPoints = ps.nProcessed
+  track.save()
 
 if __name__ == "__main__":
 
