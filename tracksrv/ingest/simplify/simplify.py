@@ -28,58 +28,102 @@ from django.utils import timezone
 from tracks.models import Track,Sounding,ProcessingStatus
 
 import tiles.transform as tf
-from tiles.util import tile_to_3857,Perf
-
-def q(z,x,y):
-  bbox = Polygon.from_bbox((*tile_to_3857(z,x,y+1), *tile_to_3857(z,x+1,y)))
-  bbox.srid = 3857
-
-  return Sounding.objects.filter(track=track, coord__coveredby=bbox)
-
-def printProg(z,x,y,s):
-  print('                                                                                                ',end='\r')
-  print('z=%d, x=%d, y=%d %s'%(z,x,y,s),end='\r')
+from tiles.util import tile_to_3857,Perf,Stat
 
 def minTile(context,z,x,y):
-  if z < Sounding.MAX_LEVEL+context['subdiv']:
 
+  def q(z,x,y):
+    bbox = Polygon.from_bbox((*tile_to_3857(z,x,y+1), *tile_to_3857(z,x+1,y)))
+    bbox.srid = 3857
+    return Sounding.objects.filter(track=track, coord__coveredby=bbox)
+
+  def printProg(z,x,y,s):
+    print(' '*(150),end='\r')
+    print('z=%d, x=%d, y=%d %s'%(z,x,y,s),end='\r')
+
+  with Perf() as p:
+    pts = q(z,x,y)
+    haspts = pts.exists()
+  context['stat1'][z].add(p.t)
+
+  if not haspts:
+    return None
+
+  if (z < 15 or pts.count() > 4**context['subdiv']) and z < context['maxlev']+context['subdiv']:
     c = [[2*x,2*y],[2*x+1,2*y],[2*x,2*y+1],[2*x+1,2*y+1]]
-    haspts = [[q(z+1,x,y).exists(),x,y] for x,y in c] # could do in parallel
 
     # determine minimal sounding
     # XXX could smarten up when we update the database
     minimal = None
-    for e,xx,yy in haspts:
-      if e:
-        r = minTile(context,z+1,xx,yy)
-        if r is not None:
-          if (minimal is None) or r['z'] < minimal['z']:
-            minimal = r
+    for xx,yy in c:
+      r = minTile(context,z+1,xx,yy)
+      if r is not None:
+        if (minimal is None) or (r['z'] < minimal['z']):
+          minimal = r
 
   else:
-    pts = q(z,x,y)
     context['ps'].incProgress(pts.count())
-    minimal = pts.annotate(mz=Min('z')).filter(mz=F('z')).values('id','z')[0]
+    with Perf() as p:
+      minimal = pts.annotate(mz=Min('z')).filter(mz=F('z')).values('id','z')[0]
+    context['stat2'][z].add(p.t)
+
+    with Perf() as p:
+      pts.exclude(min_level=z+1).update(min_level=z+1)
+    context['stat3'][z].add(p.t)
 
   # we now have minimal
-  Sounding.objects.filter(id=minimal['id']).update(min_level=z-context['subdiv'])
+  with Perf() as p:
+    Sounding.objects.filter(id=minimal['id']).exclude(min_level=z-context['subdiv']).update(min_level=z-context['subdiv'])
+  # we could stop the updating here -- if no change, or rather -- change here increases the min_level
+  context['stat4'][z].add(p.t)
 
   if z == 15:
     printProg(z,x,y,str(context['ps']))
 
   return minimal
 
+def printStat(title,stat):
+  def r(h,c,hh=True):
+    if hh:
+      h += '%7d'%sum(c)
+    else:
+      h += ' '*7
+    print('%s'%h,end=' ')
+
+    for x in c:
+      print('%7d'%x,end=' ')
+    print()
+
+  print()
+  print(title)
+  print('-'*len(title))
+
+  r('i  ',range(len(stat)),False)
+  r('cnt',[x.n for x in stat])
+  r('ctm',[x.c for x in stat])
+  r('atm',[1000*x.avg() for x in stat],False)
+
 def simplifyFull(track,subdiv,maxlev):
   context={'subdiv':subdiv,'maxlev':maxlev}
-  context['ps'] = ProcessingStatus(name="simplification",
+  context['stat1'] = [Stat() for x in range(maxlev+subdiv+1)]
+  context['stat2'] = [Stat() for x in range(maxlev+subdiv+1)]
+  context['stat3'] = [Stat() for x in range(maxlev+subdiv+1)]
+  context['stat4'] = [Stat() for x in range(maxlev+subdiv+1)]
+
+  context['ps'] = ProcessingStatus(name="simp -s %d -m %d"%(subdiv,maxlev),
                                     track=track,
-                                    toProcess=Sounding.objects.filter(track=track).count())
+                                    toProcess=track.nPoints)
   context['ps'].save()
 
-  Sounding.objects.filter(track=track).update(min_level=maxlev+1)
   minTile(context,0,0,0)
 
   context['ps'].end()
+
+  printStat('all-search',context['stat1'])
+  printStat('min-search',context['stat2'])
+  printStat('all-update',context['stat3'])
+  printStat('one-update',context['stat4'])
+
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Process soundings to limit number of soundings per tile.')
@@ -97,15 +141,15 @@ if __name__ == "__main__":
   tracks = Track.objects.exclude(sounding=None)
   if not args.force:
     tracks = tracks.annotate(minlev=Min('sounding__min_level')).exclude(minlev__lt=Sounding.MAX_LEVEL+1)
-  
+
   if len(args.tracks) > 0:
     tracks = tracks.filter(id__in=args.tracks)
 
   if tracks.count() > 0:
     print("Processing tracks: %s"%[t.id for t in tracks])
 
-      for track in tracks:
-        logger.info("simplifying track %s",str(track))
-        p = Perf()
+    for track in tracks:
+      logger.info("simplifying track %s",str(track))
+      with Perf() as p:
         simplifyFull(track, args.subdiv,args.maxlev)
       logger.info("\nsimplification took %f s",p.t)
