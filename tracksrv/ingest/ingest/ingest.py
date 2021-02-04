@@ -170,10 +170,10 @@ if __name__ == "__main__":
     with connection.cursor() as cursor:
       logger.debug("dropping index")
       cursor.execute("""
-        DROP INDEX tracks_sounding_z_8af7739d;
-        DROP INDEX tracks_sounding_coord_id;
-        DROP INDEX tracks_sounding_min_level_744b912d;
-        DROP INDEX tracks_sounding_track_id_e77bcf1c;
+        DROP INDEX IF EXISTS z_idx;
+        DROP INDEX IF EXISTS coord_idx;
+        DROP INDEX IF EXISTS min_level_idx;
+        DROP INDEX IF EXISTS track_idx;
       """)
 
     try:
@@ -214,8 +214,8 @@ if __name__ == "__main__":
       with connection.cursor() as cursor:
         logger.debug("recreating index")
         cursor.execute("""
-          CREATE INDEX tracks_sounding_z_8af7739d ON tracks_sounding (z);
-          CREATE INDEX tracks_sounding_coord_id ON tracks_sounding USING GIST (coord GIST_GEOMETRY_OPS_ND);
-          CREATE INDEX tracks_sounding_track_id_e77bcf1c ON tracks_sounding (track_id);
-          CREATE INDEX tracks_sounding_min_level_744b912d ON tracks_sounding (min_level);
+          CREATE INDEX z_idx ON tracks_sounding (z);
+          CREATE INDEX coord_idx ON tracks_sounding USING GIST (coord GIST_GEOMETRY_OPS_ND);
+          CREATE INDEX track_idx ON tracks_sounding (track_id);
+          CREATE INDEX min_level_idx ON tracks_sounding (min_level);
           """)

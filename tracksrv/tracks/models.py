@@ -112,7 +112,16 @@ class ProcessingStatus(models.Model):
 class Sounding(models.Model):
     MAX_LEVEL = 17
 
-    coord = models.PointField(dim=2, srid=3857, db_index=True)
-    z = models.FloatField(db_index=True)
-    min_level = models.PositiveSmallIntegerField(db_index=True, default=MAX_LEVEL)
-    track = models.ForeignKey(Track, db_index=True, on_delete=models.CASCADE)
+    coord = models.PointField(dim=2, srid=3857)
+    z = models.FloatField()
+    min_level = models.PositiveSmallIntegerField(default=MAX_LEVEL+1)
+    track = models.ForeignKey(Track, on_delete=models.CASCADE)
+
+    class Meta:
+        indexes = [
+            # consider combining coord and min_level indices
+            models.Index(name='coord_idx', fields=['coord']), # consider adding condition=Q(id__lt=0)
+            models.Index(name='min_level_idx', fields=['min_level']),
+            models.Index(name='track_idx', fields=['track']),
+            models.Index(name='z_idx', fields=['z']),
+        ]
