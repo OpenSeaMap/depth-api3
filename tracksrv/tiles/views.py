@@ -28,7 +28,7 @@ source_reloaded = datetime.datetime.today()
 
 from tiles.util import NoTile, tile_to_3857, setup_fig_ax, get_figcontents, tileLock
 
-def _gettile(z,xi,yi,func):
+def _gettile(z,xi,yi,func,**kwargs):
 #    print("called _gettile")
     x0,y0,x1,y1 = *tile_to_3857(z,xi-1,yi+2), *tile_to_3857(z,xi+2,yi-1)
     bbox = Polygon.from_bbox((x0,y0,x1,y1))
@@ -39,7 +39,6 @@ def _gettile(z,xi,yi,func):
     npts = pts_q.count()
 
     if npts == 0:
-#        print("_gettile(%d,%d,%d), 0 points"%(z,xi,yi))
         resp = HttpResponse("empty tile")
         resp.status_code = 204
         return resp
@@ -50,7 +49,7 @@ def _gettile(z,xi,yi,func):
     depth    = np.fromiter((p.z for p in pts_q),float)
 
     try:
-        s = func(z,xi,yi,pts,depth)
+        s = func(z,xi,yi,pts,depth,**kwargs)
     except NoTile:
         resp = HttpResponse("empty tile")
         resp.status_code = 204
@@ -68,7 +67,15 @@ def contour(request,z,xi,yi):
     return a tile with contour lines
     """
 
-    return _gettile(z,xi,yi,tiles.contour.tile)
+    return _gettile(z,xi,yi,tiles.contour.tile,colormap=False,isolines=True)
+
+@condition(last_modified_func=(lambda request,z,xi,yi:source_reloaded))
+def fcontour(request,z,xi,yi):
+    """
+    return a tile with filled contour lines
+    """
+
+    return _gettile(z,xi,yi,tiles.contour.tile,colormap=True)
 
 @condition(last_modified_func=(lambda request,z,xi,yi:source_reloaded))
 def track(request,z,xi,yi):
@@ -85,5 +92,4 @@ def delaunay(request,z,xi,yi,track=None):
     return a tile with contour lines
     """
 
-#    print("called delaunay")
     return _gettile(z,xi,yi,tiles.debug.delaunay)
