@@ -78,11 +78,11 @@ def tile(z,xi,yi,c_tile,depth,res=256,fmt='png',colormap=True,soundings=None,iso
         if isolines:
 
             # start with non-labeled contour/s
-            ax.contour(xs, ys, grid_d, levels=(15,),colors='b',linewidths=0.25),
+            ax.contour(xs, ys, grid_d, levels=(5,15,),colors='b',linewidths=0.25),
 
             # then, labeled contours
             ax.clabel(
-                ax.contour(xs, ys, grid_d, levels=(10,20,30),colors='b',linewidths=0.25),
+                ax.contour(xs, ys, grid_d, levels=(3,10,20,30),colors='b',linewidths=0.25),
             inline=1, fontsize=5, fmt="%1.0f")
 
     return get_figcontents(fig,res,fmt)
