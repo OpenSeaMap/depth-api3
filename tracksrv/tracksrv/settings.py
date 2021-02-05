@@ -21,13 +21,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'hs^gk%s=d2*cw-&2ri7(naj4@&j42cp6b9t#p$!z$-sp9w^vz&'
-#SECRET_KEY = 'mysecretpassword'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = ['lightning','localhost']
 
+INTERNAL_IPS = [
+    # ...
+    '127.0.0.1',
+    # ...
+]
 
 # Application definition
 
@@ -45,7 +49,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'languages', # models for languages and regions, for user management
     'rest_framework',
+    'debug_toolbar', # debug SQL/DB performance
 ]
+ 
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -55,6 +61,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'tracksrv.urls'
@@ -94,7 +101,8 @@ DATABASES = {
         'NAME': 'postgres',
         'USER': 'postgres',
         'PASSWORD': 'abcde',
-        'HOST': '127.0.0.1',
+#        'HOST': '127.0.0.1',
+        'HOST': 'lightning',
         'PORT': '5432',
     }
 }
@@ -154,6 +162,6 @@ LOGGING = {
     },
     'root': {
         'handlers': ['console'],
-        'level': 'INFO',
+        'level': 'DEBUG',
     },
 }

@@ -3,23 +3,23 @@ version: '3.1'
 
 services:
 
-  db:
-    image: postgis/postgis
-    restart: unless-stopped
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    volumes:
-      - POSTGIS_DATA:/var/lib/postgresql/data
-      - TRACKS_DATA:/srv/tracksrv/tracks
-    networks:
-      db:
+#  db:
+#    image: postgis/postgis
+#    restart: unless-stopped
+#    environment:
+#      - POSTGRES_USER=${POSTGRES_USER}
+#      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+#    volumes:
+#      - POSTGIS_DATA:/var/lib/postgresql/data
+#      - TRACKS_DATA:/srv/tracksrv/tracks
+#    networks:
+#      db:#
 
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}"]
-      interval: 30s
-      timeout: 3s
-      retries: 30
+#    healthcheck:
+#      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}"]
+#      interval: 30s
+#      timeout: 3s
+#      retries: 30
 
 #  adminer:
 #    image: adminer
@@ -33,10 +33,10 @@ services:
 
   tracksrv:
     build: .
-    depends_on:
-      - db
-    networks:
-      db:
+#    depends_on:
+#      - db
+#    networks:
+#      db:
 #      docker_dmz:
     ports:
       - 8000:8000
@@ -48,8 +48,8 @@ services:
       - SUPERUSER_EMAIL=${SUPERUSER_EMAIL}
 
 # Custom network so all services can communicate using a FQDN
-networks:
-  db:
+#networks:
+#  db:
 #  docker_dmz:
 #    external: true
 

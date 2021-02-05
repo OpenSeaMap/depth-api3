@@ -48,6 +48,7 @@ class ProcessingStatus(models.Model):
     last_update = models.DateTimeField('date and time of last update',default=timezone.now)
     end_time = models.DateTimeField('date and time of end of operation',null=True)
     track = models.ForeignKey(Track, on_delete=models.CASCADE)
+#    resume = models.CharField('json serialization of parameters necessary to pick up interrupted processing',max_length=64)
 
     def setProgress(self, nProcessed=None):
         self.last_update = timezone.now()
@@ -112,7 +113,7 @@ class ProcessingStatus(models.Model):
 class Sounding(models.Model):
     MAX_LEVEL = 17
 
-    coord = models.PointField(dim=2, srid=3857)
+    coord = models.PointField(dim=2, srid=3857,spatial_index=True)
     z = models.FloatField()
     min_level = models.PositiveSmallIntegerField(default=MAX_LEVEL+1)
     track = models.ForeignKey(Track, on_delete=models.CASCADE)
@@ -120,7 +121,7 @@ class Sounding(models.Model):
     class Meta:
         indexes = [
             # consider combining coord and min_level indices
-            models.Index(name='coord_idx', fields=['coord']), # consider adding condition=Q(id__lt=0)
+            models.Index(name='coord_idx', fields=['coord'],opclasses=['GIST_GEOMETRY_OPS_ND']), # ,'min_level'consider adding condition=Q(id__lt=0)
             models.Index(name='min_level_idx', fields=['min_level']),
             models.Index(name='track_idx', fields=['track']),
             models.Index(name='z_idx', fields=['z']),
