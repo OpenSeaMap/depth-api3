@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
 from vessels.models import Vessel
 from licenses.models import License
+from .indexmanager import IndexManagerMixin
 
 class Track(models.Model):
     class ProcessingStatus(models.TextChoices):
@@ -110,7 +111,7 @@ class ProcessingStatus(models.Model):
         ordering = ['-last_update']
         verbose_name_plural = 'processing statuses'
 
-class Sounding(models.Model):
+class Sounding(IndexManagerMixin,models.Model):
     MAX_LEVEL = 17
 
     coord = models.PointField(dim=2, srid=3857,spatial_index=True)
