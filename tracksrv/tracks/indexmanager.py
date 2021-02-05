@@ -1,3 +1,4 @@
+from django.db import connection
 import logging
 logger = logging.getLogger(__name__)
 
