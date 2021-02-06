@@ -28,13 +28,15 @@ source_reloaded = datetime.datetime.today()
 
 from tiles.util import NoTile, tile_to_3857, setup_fig_ax, get_figcontents, tileLock
 
+SUBDIV=4
+
 def _gettile(z,xi,yi,func,**kwargs):
 #    print("called _gettile")
     x0,y0,x1,y1 = *tile_to_3857(z,xi-1,yi+2), *tile_to_3857(z,xi+2,yi-1)
     bbox = Polygon.from_bbox((x0,y0,x1,y1))
     bbox.srid = 3857
 
-    pts_q = Sounding.objects.filter(min_level__lte=z, coord__contained=bbox)
+    pts_q = Sounding.objects.filter(coord__coveredby=bbox, min_level__lte=z+SUBDIV)
 
     npts = pts_q.count()
 
