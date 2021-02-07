@@ -37,6 +37,7 @@ INTERNAL_IPS = [
 
 INSTALLED_APPS = [
     'tracks.apps.TracksConfig',
+    'status.apps.StatusConfig',
     'vessels.apps.VesselsConfig',
     'users.apps.UsersConfig',
     'licenses.apps.LicensesConfig',
