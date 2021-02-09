@@ -23,10 +23,11 @@ from django.utils import timezone
 
 import pynmea2
 
-from tracks.models import Track,Sounding,ProcessingStatus
+from status.models import ProcessingStatus
+from tracks.models import Track,Sounding
 
 def progPrint(s):
-  print('                                                                                    ',end='\r')
+  print(' '*85,end='\r')
   print(s,end='\r')
 
 def filter_CSV(f):
@@ -99,29 +100,32 @@ def filter_GPX(f):
 
 def filter_NMEA(f,osm=True):
   last_seen_time = None
+  ts = 0
+  ts0 = 0
 
-  for line in f.readlines():
+  for line in f:
+    line = line.decode('ascii').rstrip()
+
     if osm:
-      # skip first 15 bytes -- OSM logger preprends every line with a timestamp
-      # XXX TODO make use of timestamp
-      line = line[15:]
+      # OSM logger lines look like this:
+      # 00:01:06.427;B;$GPGGA,071101.000,5405.5570,N,01048.0279,E,1,10,1.2,4.3,M,45.2,M,,0000*5E
+      # i.e. the first 12 bytes are a timestamp, followed by a channel indicator.
+      # for now, we don't make use of the timestamp
+      ts = float(line[6:12]) # parse the timestamp
+      line = line[15:]       # and throw away the OSM header
     try:
-      msg = pynmea2.parse(line.decode('utf-8'))
+      msg = pynmea2.parse(line)
       if msg.sentence_type == 'GGA': # position and time
         if msg.is_valid:
           # record last time and position, and merge them with the next DPT measurement
           last_seen_time = msg.timestamp
           lon,lat = msg.longitude,msg.latitude
-        else:
-#          logger.debug('found invalid GGA message')
-          pass
       elif msg.sentence_type == 'DPT': # depth transducer
-        if msg.depth is not None:
-          yield Point(lon,lat,srid=4326),float(msg.depth + msg.offset)
-        else:
-#         logger.debug('found invalid DPT message')
-          pass
+        yield Point(lon,lat,srid=4326),float(msg.depth+msg.offset)
+      elif msg.sentence_type == 'DBT': # depth transducer
+        yield Point(lon,lat,srid=4326),float(msg.depth_meters)
     except (AttributeError,NameError) as e:
+      # logger.debug('exception got %s',str(e))
       # ignore these as apparently no message recognition can be done without them
       pass
     except pynmea2.ParseError as e: # ignore all parse errors
@@ -137,6 +141,7 @@ def do_ingest(track,trkPts):
 
   ps = ProcessingStatus(name="ingest",track=track)
   ps.save()
+  progPrint(str(ps))
 
   objs = (Sounding(track=track, coord=p.transform(3857,clone=True), z=z) for p,z in trkPts)
   while True:
@@ -153,7 +158,7 @@ def do_ingest(track,trkPts):
 
 if __name__ == "__main__":
 
-  if Track.objects.filter(sounding=None).exists():
+  if Track.objects.filter(nPoints=None).exists():
 
     try:
       send_mail(
@@ -166,19 +171,25 @@ if __name__ == "__main__":
     except:
       pass
 
-    # drop all indices (except the primary) beforehand
-    with connection.cursor() as cursor:
-      logger.debug("dropping index")
-      cursor.execute("""
-        DROP INDEX IF EXISTS z_idx;
-        DROP INDEX IF EXISTS coord_idx;
-        DROP INDEX IF EXISTS min_level_idx;
-        DROP INDEX IF EXISTS track_idx;
-      """)
+    """
+      because inserting into an indexed table can be rather slow,
+      we used to drop the index and re-create after the operation.
+      However, this degrades performance for everyone else, and
+      recreating the index afterwards is not exactly cheap either.
+      So for now... disabled
+    """
+#    with connection.cursor() as curProcessingStatussor:
+#      logger.debug("dropping index")
+#      cursor.execute("""
+#        DROP INDEX IF EXISTS z_idx;
+#        DROP INDEX IF EXISTS coord_idx;
+#        DROP INDEX IF EXISTS min_level_idx;
+#        DROP INDEX IF EXISTS track_idx;
+#      """)
 
     try:
       # all tracks that do not have any soundings yet
-      for track in Track.objects.filter(sounding=None):
+      for track in Track.objects.filter(nPoints=None):
         logger.info("start ingest %s",str(track))
 
         if track.format == Track.FileFormat.GPX:
@@ -211,11 +222,12 @@ if __name__ == "__main__":
 
     finally:
       # re-create min_level index
-      with connection.cursor() as cursor:
-        logger.debug("recreating index")
-        cursor.execute("""
-          CREATE INDEX z_idx ON tracks_sounding (z);
-          CREATE INDEX coord_idx ON tracks_sounding USING GIST (coord GIST_GEOMETRY_OPS_ND);
-          CREATE INDEX track_idx ON tracks_sounding (track_id);
-          CREATE INDEX min_level_idx ON tracks_sounding (min_level);
-          """)
+#      with connection.cursor() as cursor:
+#        logger.debug("recreating index")
+#        cursor.execute("""
+#          CREATE INDEX z_idx ON tracks_sounding (z);
+#          CREATE INDEX coord_idx ON tracks_sounding USING GIST (coord GIST_GEOMETRY_OPS_ND);
+#          CREATE INDEX track_idx ON tracks_sounding (track_id);
+#          CREATE INDEX min_level_idx ON tracks_sounding (min_level);
+#          """)
+      pass
