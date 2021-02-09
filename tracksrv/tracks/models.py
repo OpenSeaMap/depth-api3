@@ -20,6 +20,10 @@ class Track(models.Model):
         NMEA0183_OSM = 'OSM', _('NMEA 0183 with OSM timestamps')
         TAGGED_CSV = 'CSV', _('CSV with column headers')
 
+    class HashMethod(models.TextChoices):
+        MD5 = 'MD5'
+        SHA256 = 'SHA256'
+
     vessel = models.ForeignKey(Vessel, on_delete=models.CASCADE)
     submitter = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     license = models.ForeignKey(License, on_delete=models.SET_NULL, null=True)
@@ -27,6 +31,8 @@ class Track(models.Model):
     processing_status = models.CharField(max_length=3, blank=True, choices=ProcessingStatus.choices, default=ProcessingStatus.NEW)
     rawfile = models.FileField(upload_to='raw_tracks/')
     format = models.CharField(max_length=3,blank=True,choices=FileFormat.choices,default="")
+    fingerprint = models.CharField(max_length=64,blank=True)
+    fingerprintmethod = models.CharField(max_length=10, choices=HashMethod.choices, blank=True, default="")
     note = models.CharField('optional uploaders\' note',max_length=200,blank=True,default="")
     quality = models.IntegerField('a track quality measure from 0 (unusable) to 100 (perfect)', default=0)
     nPoints = models.IntegerField('number of points in track', null=True, default=0)

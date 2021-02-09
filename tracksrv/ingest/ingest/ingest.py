@@ -10,6 +10,7 @@ import subprocess
 import xml.etree.ElementTree as ET
 from itertools import islice
 import logging
+import hashlib
 
 logger = logging.getLogger(__name__)
 
@@ -26,12 +27,38 @@ import pynmea2
 from status.models import ProcessingStatus
 from tracks.models import Track,Sounding
 
+def hashFile(f,name):
+  """compute a hash over a file.
+
+  Parameters:
+  f (file): The file from which to calculate the hash
+  name (String): the name of the hash algorithm to use
+
+  Returns:
+  totalBytes (int),h (hash): The total length of the file in bytes and a hashlib hash object
+  """
+
+  BUFSIZE = 2048
+  totalbytes = 0
+  b = bytearray(BUFSIZE)
+  h = hashlib.new(name)
+
+  while True:
+    n = f.readinto(b)
+    totalbytes += n
+    if n == 0:
+      break
+    h.update(b[0:n])
+
+  return totalbytes,h
+
 def progPrint(s):
   print(' '*85,end='\r')
   print(s,end='\r')
 
 def filter_CSV(f):
   """read in a CSV file, separated by semicolon.
+
   The first line needs to contain the column names "lat","lon","dbs","time" (in any order)
   i.e.
   lat;lon;dbs;time
@@ -41,6 +68,9 @@ def filter_CSV(f):
   37.312124;26.56452829;5.35;2019-09-23 14:22:00.601
 
   empty lines are allowed; lines starting with "#" are ignored.
+
+  Parameters:
+  f -- the file to read from
   """
 
   headers = None
@@ -66,15 +96,20 @@ def filter_CSV(f):
     yield Point(float(x[headers[b'lon']]),float(x[headers[b'lat']]),srid=4326), float(x[headers[b'dbs']])
 
 def filter_GPX(f):
+  """ingest a GPX track into the database.
 
-  """
-  look for elements of the form
+  The import looks for elements of the form
   <trkpt lon="11.13420161" lat="48.06410290" >
       <time>2000-01-16T13:16:01Z</time>
       <depth>2.32</depth>
       <watertemp>23.77</watertemp>
       <sog>0.66</sog>
   </trkpt>
+
+  At this time, only the http://www.topografix.com/GPX/1/1 flavor of GPS is supported.
+
+  Parameters:
+  f   -- the file to read from.
   """
 
   inPt = False
@@ -98,7 +133,18 @@ def filter_GPX(f):
         except:
           pass
 
-def filter_NMEA(f,osm=True):
+def filter_NMEA(f,osm=False):
+  """ingest an NMEA0183 track into the database.
+
+  As a specialty, the NMEA variant written by some versions of the openseamap
+  logger is also supported.
+
+  Parameters:
+  f   -- the file to read from.
+  osm -- set to true if the special openseamap flavor is used
+         (default is plain NMEA0183)
+  """
+
   last_seen_time = None
   ts = 0
   ts0 = 0
@@ -135,13 +181,17 @@ def filter_NMEA(f,osm=True):
 #      logger.debug('unicode error: {%s}',e)
       pass
 
-def do_ingest(track,trkPts):
+def do_ingest(track,ps,trkPts):
+  """ingest a track's soundings into the database.
+
+  Parameters:
+  track  -- the track object
+  ps     -- the status object to update with status information
+  trkPts -- an iterator returning tuples of (lat,lon),depth information
+  """
+
   # to avoid holding several million points in memory, add the points in batches of 10000
   BATCH_SIZE = 10000
-
-  ps = ProcessingStatus(name="ingest",track=track)
-  ps.save()
-  progPrint(str(ps))
 
   objs = (Sounding(track=track, coord=p.transform(3857,clone=True), z=z) for p,z in trkPts)
   while True:
@@ -152,13 +202,12 @@ def do_ingest(track,trkPts):
       ps.incProgress(len(batch))
       progPrint(str(ps))
 
-  ps.end()
   track.nPoints = ps.nProcessed
   track.save()
 
 if __name__ == "__main__":
 
-  if Track.objects.filter(nPoints=None).exists():
+  if Track.objects.filter(nPoints=0).exists():
 
     try:
       send_mail(
@@ -189,21 +238,39 @@ if __name__ == "__main__":
 
     try:
       # all tracks that do not have any soundings yet
-      for track in Track.objects.filter(nPoints=None):
+      for track in Track.objects.filter(nPoints=0):
         logger.info("start ingest %s",str(track))
 
-        if track.format == Track.FileFormat.GPX:
-          it = filter_GPX(track.rawfile)
-        elif track.format == Track.FileFormat.NMEA0183:
-          it = filter_NMEA(track.rawfile,osm=False)
-        elif track.format == Track.FileFormat.NMEA0183_OSM:
-          it = filter_NMEA(track.rawfile,osm=True)
-        elif track.format == Track.FileFormat.TAGGED_CSV:
-          it = filter_CSV(track.rawfile)
-        else:
-          it = () # emtpy iterator -> no points
+        ps = ProcessingStatus(name="fingerprint",track=track)
+        ps.save()
+        progPrint(str(ps))
 
-        do_ingest(track,it)
+        with track.rawfile.open("rb") as f:
+          nbytes,hash = hashFile(f,'md5')
+          track.fingerprint = hash.hexdigest()
+          track.fingerprintmethod = hash.name
+
+        ps.name = "ingest"
+        ps.save()
+        progPrint(str(ps))
+
+        with track.rawfile.open("rb") as f:
+          if track.format == Track.FileFormat.GPX:
+            it = filter_GPX(f)
+          elif track.format == Track.FileFormat.NMEA0183:
+            it = filter_NMEA(f,osm=False)
+          elif track.format == Track.FileFormat.NMEA0183_OSM:
+            it = filter_NMEA(f,osm=True)
+          elif track.format == Track.FileFormat.TAGGED_CSV:
+            it = filter_CSV(f)
+          else:
+            it = () # emtpy iterator -> no points
+
+          do_ingest(track,ps,it)
+
+        ps.end()
+        progPrint(str(ps))
+
         if it != ():
           subject = 'Done ingesting {}'.format(str(track))
           body = """The track contained {} points
