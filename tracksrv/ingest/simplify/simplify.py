@@ -25,7 +25,8 @@ from django.contrib.gis.db.models.functions import GeoFunc
 from django.db.models.fields import FloatField
 from django.utils import timezone
 
-from tracks.models import Track,Sounding,ProcessingStatus
+from status.models import ProcessingStatus
+from tracks.models import Track,Sounding
 
 import tiles.transform as tf
 from tiles.util import tile_to_3857,Perf,Stat
@@ -172,12 +173,12 @@ if __name__ == "__main__":
     logger.info("\nsimplification took %f s",p.t)
   else:
 
-    tracks = Track.objects.exclude(sounding=None,id__in=args.tracks)
+    tracks = Track.objects.filter(id__in=args.tracks).exclude(sounding=None)
     if not args.force:
       tracks = tracks.annotate(minlev=Min('sounding__min_level')).exclude(minlev__lt=Sounding.MAX_LEVEL+1)
 
-      for track in tracks:
-        logger.info("simplifying track %s",str(track))
-        with Perf() as p:
-          simplifyFull(args.maxlev, track)
-        logger.info("\nsimplification took %f s",p.t)
+    for track in tracks:
+      logger.info("simplifying track %s",str(track))
+      with Perf() as p:
+        simplifyFull(args.maxlev, track)
+      logger.info("\nsimplification took %f s",p.t)
