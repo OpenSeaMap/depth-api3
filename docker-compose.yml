@@ -13,6 +13,9 @@ services:
       - TRACKS_DATA:/srv/tracksrv/tracks
     networks:
       db:
+      docker_dmz:
+    ports:
+      - 5433:5432
 
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}"]

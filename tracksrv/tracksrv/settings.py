@@ -26,7 +26,7 @@ SECRET_KEY = 'hs^gk%s=d2*cw-&2ri7(naj4@&j42cp6b9t#p$!z$-sp9w^vz&'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['lightning','localhost','depth.openseadata.org']
+ALLOWED_HOSTS = ['lightning','localhost','depth.openseadata.org','*']
 
 INTERNAL_IPS = [
     # ...
@@ -101,8 +101,11 @@ DATABASES = {
         'NAME': 'postgres',
         'USER': 'postgres',
         'PASSWORD': 'abcde',
-        'HOST': 'db',
-        'PORT': '5432',
+
+        'HOST': '127.0.0.1',
+         'PORT': '5433',          
+#        'HOST': 'lightning',
+#        'PORT': '5432',       
     }
 }
 
