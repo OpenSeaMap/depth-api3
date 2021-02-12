@@ -11,6 +11,7 @@ services:
     volumes:
       - POSTGIS_DATA:/var/lib/postgresql/data
       - TRACKS_DATA:/srv/tracksrv/tracks
+      - ./volumes:/transfer
     networks:
       db:
       docker_dmz:
