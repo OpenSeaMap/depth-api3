@@ -1,0 +1,36 @@
+
+
+Request:
+	Request URL: https://depth.openseamap.org/org.osm.depth.upload/api2/auth/logindummy
+	Request Method: GET
+	Status Code: 200 OK
+	Remote Address: 195.37.132.186:443
+	Referrer Policy: strict-origin-when-cross-origin
+	Cache-Control: private
+	Connection: Keep-Alive
+	Content-Length: 2
+	Content-Type: text/html;charset=UTF-8
+	Date: Sat, 13 Feb 2021 08:03:17 GMT
+	Expires: Thu, 01 Jan 1970 01:00:00 GMT
+	Keep-Alive: timeout=15, max=92
+	Server: Apache-Coyote/1.1
+	Set-Cookie: JSESSIONID=985AA75861EC463496766463247FA6F0; Path=/org.osm.depth.upload/; HttpOnly
+	X-Frame-Options: SAMEORIGIN
+	Accept: */*
+	Accept-Encoding: gzip, deflate, br
+	Accept-Language: de-DE,de;q=0.9,en;q=0.8,en-US;q=0.7
+	Connection: keep-alive
+	Cookie: JSESSIONID=99BB3108ABA09C9AD2A94BFA0689859C
+	Host: depth.openseamap.org
+	Referer: https://depth.openseamap.org/
+	sec-ch-ua: "Chromium";v="88", "Google Chrome";v="88", ";Not A Brand";v="99"
+	sec-ch-ua-mobile: ?0
+	Sec-Fetch-Dest: empty
+	Sec-Fetch-Mode: cors
+	Sec-Fetch-Site: same-origin
+	User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36
+	X-Requested-With: XMLHttpRequest
+	
+	
+Response 2:
+	ok
