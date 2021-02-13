@@ -98,9 +98,9 @@ MEDIA_ROOT = '/srv/tracksrv/tracks'
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'postgres',
+        'NAME': 'osmapi3',
         'USER': 'postgres',
-        'PASSWORD': 'abcde',
+        'PASSWORD': 'postgres',
 
         'HOST': '127.0.0.1',
          'PORT': '5433',          
