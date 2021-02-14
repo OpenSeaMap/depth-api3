@@ -11,10 +11,11 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+STATIC_DIR = os.path.join(BASE_DIR, 'depth_webfrontend/src/')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
@@ -25,7 +26,7 @@ SECRET_KEY = 'hs^gk%s=d2*cw-&2ri7(naj4@&j42cp6b9t#p$!z$-sp9w^vz&'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['lightning','localhost','depth.openseadata.org']
+ALLOWED_HOSTS = ['lightning','localhost','depth.openseadata.org','*']
 
 INTERNAL_IPS = [
     # ...
@@ -99,9 +100,9 @@ DATABASES = {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'postgres',
         'USER': 'postgres',
-        'PASSWORD': 'abcde',
-        'HOST': 'db',
-        'PORT': '5432',
+        'PASSWORD': 'postgres',
+        'HOST': 'localhost',
+        'PORT': '5433',
     }
 }
 
@@ -143,6 +144,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    STATIC_DIR,
+]
 
 # Redirect to tracks view after login (Default redirects to /accounts/profile/)
 LOGIN_REDIRECT_URL = '/mytracks'
