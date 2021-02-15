@@ -1,0 +1,1017 @@
+---
+swagger: "2.0"
+info:
+  version: "2.0.0"
+host: "depth.openseamap.org:8080"
+basePath: "/org.osm.depth.upload/api2"
+tags:
+- name: "License"
+- name: "Gauges"
+- name: "Statistics"
+- name: "Role Change"
+- name: "User Management"
+- name: "Tracks"
+- name: "Vessel Configuration"
+schemes:
+- "http"
+paths:
+  /gauge:
+    get:
+      tags:
+      - "Gauges"
+      summary: "Get a list of all gauges"
+      description: ""
+      operationId: "getAllGauges"
+      produces:
+      - "application/json"
+      - "application/xml"
+      parameters: []
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Gauge"
+    post:
+      tags:
+      - "Gauges"
+      summary: "Create a new gauge"
+      description: ""
+      operationId: "newGauge"
+      consumes:
+      - "multipart/form-data"
+      - "application/json"
+      produces:
+      - "application/json"
+      - "application/xml"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: false
+        schema:
+          $ref: "#/definitions/Gauge"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Gauge"
+  /gauge/{gaugeid}/measurement:
+    get:
+      tags:
+      - "Gauges"
+      summary: "Get a list of gauge measurements for a specific gauge"
+      description: ""
+      operationId: "getGaugesMeasurements"
+      produces:
+      - "application/json"
+      - "application/xml"
+      parameters:
+      - name: "gaugeid"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/GaugeMeasurement"
+    post:
+      tags:
+      - "Gauges"
+      summary: "Create a new gauge measurement for a specific gauge"
+      description: ""
+      operationId: "create"
+      consumes:
+      - "multipart/form-data"
+      - "application/json"
+      produces:
+      - "application/json"
+      - "application/xml"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: false
+        schema:
+          $ref: "#/definitions/GaugeMeasurement"
+      - name: "gaugeid"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        default:
+          description: "successful operation"
+  /gauge/{gaugeid}/measurement/{date}:
+    delete:
+      tags:
+      - "Gauges"
+      summary: "Deletes a set of gauge values"
+      description: "Only admins may delete gauge data"
+      operationId: "delete"
+      consumes:
+      - "application/json"
+      - "application/xml"
+      parameters:
+      - name: "date"
+        in: "path"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        required: false
+        schema:
+          $ref: "#/definitions/Gauge"
+      - name: "gaugeid"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        default:
+          description: "successful operation"
+  /gauge/{id}:
+    delete:
+      tags:
+      - "Gauges"
+      summary: "Delete a gauge with the given id"
+      description: ""
+      operationId: "delete"
+      consumes:
+      - "application/json"
+      - "application/xml"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        default:
+          description: "successful operation"
+  /license:
+    get:
+      tags:
+      - "License"
+      summary: "Lists available licenses for upload"
+      description: ""
+      operationId: "getAllLicenses"
+      produces:
+      - "application/json"
+      - "application/xml"
+      parameters: []
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/License"
+    post:
+      tags:
+      - "License"
+      summary: "Create a new license"
+      description: "Create your own or fill in an existing license for which to upload\
+        \ data. You may even make it available for everyone"
+      operationId: "newLicense"
+      consumes:
+      - "multipart/form-data"
+      - "application/json"
+      produces:
+      - "application/json"
+      - "application/xml"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: false
+        schema:
+          $ref: "#/definitions/License"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "string"
+  /license/bbox:
+    get:
+      tags:
+      - "License"
+      summary: "Gets all license short name concatenated"
+      description: "This may be used to show location specific license data in a map"
+      operationId: "getLicenses"
+      consumes:
+      - "application/xml"
+      - "application/json"
+      produces:
+      - "text/plain"
+      parameters:
+      - name: "lat1"
+        in: "query"
+        required: false
+        type: "string"
+      - name: "lon1"
+        in: "query"
+        required: false
+        type: "string"
+      - name: "lat2"
+        in: "query"
+        required: false
+        type: "string"
+      - name: "lon2"
+        in: "query"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "string"
+  /license/{id}:
+    delete:
+      tags:
+      - "License"
+      summary: "Delete a license"
+      description: "The license may not be deleted if any track is associated with\
+        \ that license. You may only delete your own licenses. Admin may delete every\
+        \ license"
+      operationId: "delete"
+      consumes:
+      - "application/json"
+      - "application/xml"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        default:
+          description: "successful operation"
+  /rolechange:
+    post:
+      tags:
+      - "Role Change"
+      summary: "Create a new license"
+      description: "Create your own or fill in an existing license for which to upload\
+        \ data. You may even make it available for everyone"
+      operationId: "createChangeRoleRequest"
+      consumes:
+      - "multipart/form-data"
+      - "application/json"
+      produces:
+      - "application/json"
+      - "application/xml"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: false
+        schema:
+          $ref: "#/definitions/RoleChange"
+      responses:
+        default:
+          description: "successful operation"
+    delete:
+      tags:
+      - "Role Change"
+      summary: "Delete "
+      description: "Create your own or fill in an existing license for which to upload\
+        \ data. You may even make it available for everyone"
+      operationId: "approveRoleRequest"
+      consumes:
+      - "multipart/form-data"
+      - "application/json"
+      produces:
+      - "application/json"
+      - "application/xml"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: false
+        schema:
+          $ref: "#/definitions/RoleChange"
+      responses:
+        default:
+          description: "successful operation"
+  /stats:
+    get:
+      tags:
+      - "Statistics"
+      summary: "Retrieves statistics about current user and track count"
+      description: ""
+      operationId: "getStats"
+      produces:
+      - "application/json"
+      - "application/xml"
+      parameters: []
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Statistics"
+  /track:
+    get:
+      tags:
+      - "Tracks"
+      summary: "Lists the users uploaded tracks"
+      description: ""
+      operationId: "getAllTracks"
+      produces:
+      - "application/json"
+      - "application/xml"
+      parameters: []
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Track"
+    post:
+      tags:
+      - "Tracks"
+      summary: "Creates a new track"
+      description: "requires a vessel and license and returns a track with id to be\
+        \ referenced on file upload"
+      operationId: "newTrack"
+      consumes:
+      - "application/json"
+      - "application/xml"
+      produces:
+      - "application/json"
+      - "application/xml"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: false
+        schema:
+          $ref: "#/definitions/Track"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Track"
+    put:
+      tags:
+      - "Tracks"
+      summary: "Uploades a track file for a given track id"
+      description: "Requires multipart form data. A new track needs to be created\
+        \ through a post and a put associates the data"
+      operationId: "uploadDone"
+      consumes:
+      - "multipart/form-data"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "track"
+        in: "formData"
+        required: false
+        type: "file"
+      - name: "id"
+        in: "formData"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "string"
+  /track/{id}:
+    post:
+      tags:
+      - "Tracks"
+      summary: "Creates a new track"
+      description: "requires a vessel and license and returns a track with id to be\
+        \ referenced on file upload"
+      operationId: "newTrackWithNullId"
+      consumes:
+      - "application/json"
+      - "application/xml"
+      produces:
+      - "application/json"
+      - "application/xml"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: false
+        schema:
+          $ref: "#/definitions/Track"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Track"
+    delete:
+      tags:
+      - "Tracks"
+      summary: "Deletes a track"
+      description: "Only the users own track may be deleted"
+      operationId: "delete"
+      consumes:
+      - "application/json"
+      - "application/xml"
+      produces:
+      - "application/json"
+      - "application/xml"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Track"
+  /track/{id}/download:
+    get:
+      tags:
+      - "Tracks"
+      summary: "Downloads a track"
+      description: "Only available to administators right now"
+      operationId: "download"
+      produces:
+      - "application/octet-stream"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        default:
+          description: "successful operation"
+  /users:
+    get:
+      tags:
+      - "User Management"
+      summary: "Retreives a list of all users"
+      description: "Only admins are allowed to retrieve all users"
+      operationId: "getAllUsers"
+      produces:
+      - "application/xml"
+      parameters: []
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/User"
+    post:
+      tags:
+      - "User Management"
+      summary: "Creates a new user"
+      description: "The user is identified by his email address."
+      operationId: "createUser"
+      consumes:
+      - "application/x-www-form-urlencoded"
+      - "application/json"
+      produces:
+      - "application/json"
+      - "application/xml"
+      parameters:
+      - name: "username"
+        in: "formData"
+        required: false
+        type: "string"
+      - name: "password"
+        in: "formData"
+        required: false
+        type: "string"
+      - name: "forename"
+        in: "formData"
+        required: false
+        type: "string"
+      - name: "surname"
+        in: "formData"
+        required: false
+        type: "string"
+      - name: "organisation"
+        in: "formData"
+        required: false
+        type: "string"
+      - name: "acceptedEmailContact"
+        in: "formData"
+        required: false
+        type: "string"
+      - name: "country"
+        in: "formData"
+        required: false
+        type: "string"
+      - name: "language"
+        in: "formData"
+        required: false
+        type: "string"
+      - name: "phone"
+        in: "formData"
+        required: false
+        type: "string"
+      - name: "captcha"
+        in: "formData"
+        required: false
+        type: "string"
+      responses:
+        default:
+          description: "successful operation"
+  /users/captcha:
+    post:
+      tags:
+      - "User Management"
+      summary: "Create a BASE64 encoded png as captcha. This may be used to validate\
+        \ a request"
+      description: ""
+      operationId: "createCatpcha"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        default:
+          description: "successful operation"
+  /users/changepass:
+    post:
+      tags:
+      - "User Management"
+      summary: "Change the password"
+      description: "Changes the users password. The user must be signed in in order\
+        \ to do that."
+      operationId: "changePassword"
+      parameters:
+      - name: "oldPassword"
+        in: "formData"
+        required: false
+        type: "string"
+      - name: "newPassword"
+        in: "formData"
+        required: false
+        type: "string"
+      responses:
+        500:
+          description: "Additional 'Error' header reveals the error"
+  /users/current:
+    get:
+      tags:
+      - "User Management"
+      summary: "Get current user details"
+      description: ""
+      operationId: "getCurrentUser"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/User"
+  /users/reset:
+    post:
+      tags:
+      - "User Management"
+      summary: "Reset your password"
+      description: "You may reset your password by supplying a valid capture text\
+        \ for a given and email. The reset password will be mailed to the account\
+        \ owner"
+      operationId: "resetPassword"
+      consumes:
+      - "application/x-www-form-urlencoded"
+      produces:
+      - "application/json"
+      - "application/xml"
+      parameters:
+      - name: "username"
+        in: "formData"
+        required: false
+        type: "string"
+      - name: "captcha"
+        in: "formData"
+        required: false
+        type: "string"
+      responses:
+        default:
+          description: "successful operation"
+  /users/update:
+    put:
+      tags:
+      - "User Management"
+      summary: "Update user data"
+      description: "The users personal data may be updated by himself and himself\
+        \ only"
+      operationId: "updateUser"
+      consumes:
+      - "application/json"
+      - "application/xml"
+      produces:
+      - "application/json"
+      - "application/xml"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: false
+        schema:
+          $ref: "#/definitions/User"
+      responses:
+        default:
+          description: "successful operation"
+  /users/upgrade:
+    get:
+      tags:
+      - "User Management"
+      summary: "Request downloader role for user. Users having this role do have"
+      description: ""
+      operationId: "requestUpgradeUserRole"
+      consumes:
+      - "application/json"
+      - "application/xml"
+      produces:
+      - "application/json"
+      - "application/xml"
+      parameters: []
+      responses:
+        default:
+          description: "successful operation"
+  /vesselconfig:
+    get:
+      tags:
+      - "Vessel Configuration"
+      summary: "Get all vessel configurations"
+      description: "User may retrieve only their own vessel configurations. An admin\
+        \ may see all configurations"
+      operationId: "getAll"
+      produces:
+      - "application/json"
+      - "application/xml"
+      parameters: []
+      responses:
+        default:
+          description: "successful operation"
+    post:
+      tags:
+      - "Vessel Configuration"
+      summary: "Updates a vessel configuration"
+      description: "Creates all the details of a vessel configuration. User may only\
+        \ update their own configurations"
+      operationId: "createVesselConfig"
+      consumes:
+      - "application/xml"
+      - "application/json"
+      produces:
+      - "application/json"
+      - "application/xml"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: false
+        schema:
+          $ref: "#/definitions/VesselConfiguration"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "string"
+  /vesselconfig/{id}:
+    post:
+      tags:
+      - "Vessel Configuration"
+      summary: "Create an empty vessel configuration"
+      description: ""
+      operationId: "createVesselConfigWithNullId"
+      consumes:
+      - "multipart/form-data"
+      - "application/json"
+      produces:
+      - "application/json"
+      - "application/xml"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: false
+        schema:
+          $ref: "#/definitions/VesselConfiguration"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "string"
+    put:
+      tags:
+      - "Vessel Configuration"
+      summary: "Updates a vessel configuration"
+      description: "Updates the details of a vessel configuration. User may only update\
+        \ their own configurations"
+      operationId: "updateVesselConfig"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      - "application/xml"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: false
+        schema:
+          $ref: "#/definitions/VesselConfiguration"
+      responses:
+        default:
+          description: "successful operation"
+    delete:
+      tags:
+      - "Vessel Configuration"
+      summary: "Delete a specific vessel configuration"
+      description: "Users may delete only their own configuraion. Admins may delete\
+        \ every configuration."
+      operationId: "deleteVesselConfig"
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        default:
+          description: "successful operation"
+definitions:
+  SBASSensor:
+    type: "object"
+    properties:
+      distanceFromStern:
+        type: "number"
+        format: "double"
+      distanceFromCenter:
+        type: "number"
+        format: "double"
+      distanceWaterline:
+        type: "number"
+        format: "double"
+      sensorId:
+        type: "string"
+      manufacturer:
+        type: "string"
+      model:
+        type: "string"
+  DepthSensor:
+    type: "object"
+    properties:
+      distanceFromStern:
+        type: "number"
+        format: "double"
+      distanceFromCenter:
+        type: "number"
+        format: "double"
+      distanceWaterline:
+        type: "number"
+        format: "double"
+      sensorId:
+        type: "string"
+      manufacturer:
+        type: "string"
+      model:
+        type: "string"
+      frequency:
+        type: "number"
+        format: "double"
+      angleofbeam:
+        type: "number"
+        format: "double"
+      offsetKeel:
+        type: "number"
+        format: "double"
+      offsetType:
+        type: "string"
+  User:
+    type: "object"
+    properties:
+      user_name:
+        type: "string"
+      password:
+        type: "string"
+      forname:
+        type: "string"
+      surname:
+        type: "string"
+      phone:
+        type: "string"
+      country:
+        type: "string"
+      language:
+        type: "string"
+      organisation:
+        type: "string"
+      acceptedEmailContact:
+        type: "boolean"
+        default: false
+    xml:
+      name: "user"
+  RoleChange:
+    type: "object"
+    properties:
+      user_name:
+        type: "string"
+      requestedRole:
+        type: "string"
+    xml:
+      name: "tide"
+  VesselConfiguration:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      name:
+        type: "string"
+      description:
+        type: "string"
+      mmsi:
+        type: "string"
+      manufacturer:
+        type: "string"
+      model:
+        type: "string"
+      loa:
+        type: "number"
+        format: "double"
+      breadth:
+        type: "number"
+        format: "double"
+      draft:
+        type: "number"
+        format: "double"
+      height:
+        type: "number"
+        format: "double"
+      displacement:
+        type: "number"
+        format: "double"
+      maximumspeed:
+        type: "number"
+        format: "double"
+      vesselType:
+        type: "string"
+        enum:
+        - "UNDEFINED"
+        - "SAILING_YACHT"
+        - "MOTORSHIP"
+        - "RUDDERBOAT"
+      username:
+        type: "string"
+      sbasoffset:
+        $ref: "#/definitions/SBASSensor"
+      depthoffset:
+        $ref: "#/definitions/DepthSensor"
+    xml:
+      name: "vesselconfig"
+  License:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+        description: "A unique license id"
+      name:
+        type: "string"
+        description: "The full name of the license"
+      shortName:
+        type: "string"
+        description: "An abbreviation of the license name"
+      text:
+        type: "string"
+        description: "The license text"
+      user:
+        type: "string"
+        description: "Unused"
+      publicLicense:
+        type: "boolean"
+        description: "License may used by anyone"
+        default: false
+    description: "Describes a license to be used for uploading tracks"
+    xml:
+      name: "license"
+  GaugeMeasurement:
+    type: "object"
+    properties:
+      gaugeId:
+        type: "integer"
+        format: "int64"
+      value:
+        type: "number"
+        format: "float"
+      lengthUnit:
+        type: "string"
+        enum:
+        - "METERS"
+        - "FEET"
+      timestamp:
+        type: "integer"
+        format: "int64"
+    xml:
+      name: "gaugemeasurement"
+  Statistics:
+    type: "object"
+    properties:
+      usercount:
+        type: "integer"
+        format: "int32"
+        description: "Current users in the database"
+      trackscount:
+        type: "integer"
+        format: "int32"
+        description: "Current tracks count in the database"
+      contributedpoints:
+        type: "integer"
+        format: "int64"
+        description: "Extracted amount of single points"
+  GaugeMeasurementResource:
+    type: "object"
+    properties:
+      gaugesMeasurements:
+        type: "array"
+        items:
+          $ref: "#/definitions/GaugeMeasurement"
+  Track:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+        description: "System wide unique track id"
+      fileName:
+        type: "string"
+        description: "The track file name"
+      upload_state:
+        type: "integer"
+        format: "int32"
+        description: "Upload state"
+      fileType:
+        type: "string"
+        description: "Detected format file type, read only"
+      compression:
+        type: "string"
+        description: "Detected compression type, read only"
+      delete:
+        type: "string"
+      vesselconfigid:
+        type: "integer"
+        format: "int64"
+        description: "Vessel configuration id"
+      containertrack:
+        type: "integer"
+        format: "int64"
+        description: "In case of compressed tracks lists the parent uploaded track\
+          \ that contained this track, otherwise 0"
+      license:
+        type: "integer"
+        format: "int64"
+        description: "The license id"
+      uploadDate:
+        type: "integer"
+        format: "int64"
+        description: "The date of the upload in UTC milliseconds"
+      num_points:
+        type: "integer"
+        format: "int32"
+        description: "number of points"
+      track_info:
+        type: "string"
+        description: "processing info"
+      left:
+        type: "number"
+        format: "float"
+        description: "bbox left"
+      right:
+        type: "number"
+        format: "float"
+        description: "bbox right"
+      top:
+        type: "number"
+        format: "float"
+        description: "bbox top"
+      bottom:
+        type: "number"
+        format: "float"
+        description: "bbox bottom"
+    description: "This describes tracks"
+    xml:
+      name: "track"
+  Gauge:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      name:
+        type: "string"
+      latitude:
+        type: "number"
+        format: "double"
+      longitude:
+        type: "number"
+        format: "double"
+      gaugeType:
+        type: "string"
+        enum:
+        - "UNDEFINED"
+        - "SEA"
+        - "RIVER"
+        - "LAKE"
+      waterlevel:
+        type: "number"
+        format: "double"
+    xml:
+      name: "gauge"
+
