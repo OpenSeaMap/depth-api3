@@ -22,6 +22,7 @@ from vessels import views as vesselviews
 from status import views as statusviews
 from licenses import views as licenseviews
 from users import views as userviews
+from api2 import views as api2view
 
 router = routers.DefaultRouter()
 router.register(r'tracks', trackviews.TrackViewSet)
@@ -30,11 +31,14 @@ router.register(r'licenses', licenseviews.LicenseViewSet)
 router.register(r'status', statusviews.StatusViewSet)
 router.register(r'users', userviews.UserViewSet)
 router.register(r'authusers', userviews.AuthUserViewSet)
-
+router.register(r'org.osm.depth.upload/api2/gauge', api2view.Gauge_ViewSet, basename="gauge")
 
 urlpatterns = [
     path('', include(router.urls)),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    
+    
+    
 #    path('mytracks/', TrackListView.as_view(), name='my-tracks'),
 #    path('tracks/<int:pk>', TrackDetailView.as_view()),
 #    path('vessels/<int:pk>', VesselDetailView.as_view()),# needs to change
