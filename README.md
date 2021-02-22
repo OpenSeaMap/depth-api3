@@ -9,6 +9,15 @@ real-time rendering of the tiled views.
 
 ## Installation
 Probably the easiest way to install depth-api3 is to use docker and docker-compose. To install, do the following:
+
+### clone repository
+use following command to clone the repository with submodules
+```
+git clone --recurse-submodules https://github.com/OpenSeaMap/depth-api3.git
+cd depth-api3
+
+```
+
 ### server environment configuration
 In the project main directory (i.e. alongside the dockercompose.yml), create a file .env that contains the following:
 

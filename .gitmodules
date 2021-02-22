@@ -1,0 +1,3 @@
+[submodule "tracksrv/depth_webfrontend"]
+	path = tracksrv/depth_webfrontend
+	url = git@github.com:OpenSeaMap/depth_webfrontend.git
