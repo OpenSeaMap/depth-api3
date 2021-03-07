@@ -13,25 +13,26 @@ Created on 06.02.2021
 
 @author: Richard Kunzmann
 """
-
+import environ
 from pathlib import Path
 from pickle import TRUE
-from corsheaders.middleware import ACCESS_CONTROL_ALLOW_CREDENTIALS
+#from corsheaders.middleware import ACCESS_CONTROL_ALLOW_CREDENTIALS
+
+env = environ.Env()
+environ.Env.read_env()  # reading .env file
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_DIR = "/home/richard/OpenSeaMap/WebFrontend"         # RKu: Steffen
 
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = env.bool('DEBUG', default=False)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'nvd@a^27y27t2c6=%9%pa9j73mhw-2*!b*z%4kt2gnu9!u(z7k'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
+SECRET_KEY = env.str('SECRET_KEY')
 ALLOWED_HOSTS = ['*']                                       #RKu: set to '*'
 
 
@@ -93,24 +94,25 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'depth3.wsgi.application'
 
+# mail account settings
+EMAIL_BACKEND = env.str('EMAIL_BACKEND')
+EMAIL_HOST =  env.str('EMAIL_HOST')
+EMAIL_PORT =  env.str('EMAIL_PORT')
+EMAIL_HOST_USER =  env.str('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD =  env.str('EMAIL_HOST_PASSWORD')
+EMAIL_USE_SSL = True
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
-#DATABASES = {                        # RKu: ersetzt durch db-osmapi
-#    'default': {
-#        'ENGINE': 'django.db.backends.sqlite3',
-#        'NAME': BASE_DIR / 'db.sqlite3',
-#    }
-#}
 DATABASES = {                           # RKu: setzt die OSM DB als default
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'osmapi',
-        'USER': 'postgres',
-        'PASSWORD': 'osm',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
+        'ENGINE': env.str('DB_ENGINE'),
+        'NAME': env.str('DB_NAME'),
+        'USER': env.str('DB_USER'),
+        'PASSWORD': env.str('DB_PASSWORD'),
+        'HOST': env.str('DB_HOST'),
+        'PORT': env.str('DB_PORT'),
     }
 }
 
