@@ -1,7 +1,7 @@
 # depth-api2
 
 ## setings
-settings are stored in file /depth3/.env
+settings are stored in file ./depth3/.env
 
 sample content:
 
@@ -24,6 +24,9 @@ EMAIL_HOST_PASSWORD = "12345678"
 ```
 
 # requirements
-pip3 install django-environ
-pip3 install django-cors-headers
-pip3 install django-simple-captcha
+```
+pip3 install django-environ django-cors-headers django-simple-captcha
+```
+
+# Test
+http://localhost:8003/static/local_index.html
