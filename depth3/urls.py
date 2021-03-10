@@ -30,6 +30,7 @@ urlpatterns = [
     path('org.osm.depth.upload/api2/users/changepass', include('org.osm.depth.upload.api2.users.changepass.urls')),
     path('org.osm.depth.upload/api2/users/update', include('org.osm.depth.upload.api2.users.update.urls')),
     path('org.osm.depth.upload/api2/users/captcha', include('org.osm.depth.upload.api2.users.captcha.urls')),
+    path('org.osm.depth.upload/api2/users/captcha', include('captcha.urls')),
     path('org.osm.depth.upload/api2/users/reset', include('org.osm.depth.upload.api2.users.reset.urls')),
     path('org.osm.depth.upload/api2/vesselconfig', include('org.osm.depth.upload.api2.vesselconfig.urls')),
 #    path('org.osm.depth.upload/api2/vesselconfig/null', include('org.osm.depth.upload.api2.vesselconfig.urls')),
