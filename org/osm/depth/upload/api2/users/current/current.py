@@ -4,59 +4,47 @@ Created on 08.02.2021
 @author: Richard Kunzmann
 '''
 
-#from django.http import HttpResponse
+from django.db import connections
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
-#from django.contrib.auth import authenticate
-#from django.db import models
+from django.http.response import HttpResponse
 
-#import json
-import psycopg2
- 
-#user = {}
+userdb_columns = ["user_name",
+                  "forename",
+                  "surname",
+                  "acceptedEmailContact",
+                  "organisation",
+                  "country",
+                  "language",
+                  'phone']
 
 
-def db_read (db_cur_user):
-    conn = psycopg2.connect(user="postgres",
-                            password="osm",
-                            host="127.0.0.1",
-                            port="5432",
-                            database="osmapi")
-    cur = conn.cursor()
+def _queryhelper():
+    out = ""
+    for col_entry in userdb_columns:
+        out += col_entry + ","
+    return out[:-1]
 
-    xx = "{}".format(db_cur_user)
-#    print('xx = :',xx)
-    postgreSQL_select_Query = ("select * from user_profiles where user_name='%s' ;" %xx )
-    cur.execute(str(postgreSQL_select_Query))
-#   cur.execute("select * from user_profiles where user_name=? ;", xx )
-    db_user = cur.fetchone()
 
-    return db_user
-    
-    
-@csrf_exempt
-@requires_csrf_token
 def getCurrentUser(request):
-    user = {}
 
     if request.method == 'GET':
         print('getCurrentUser: User von fetch: ', request.user)
         if request.user.is_authenticated:
-            print('fetch DB und zeige das current Model von User', request.user)
-#            print('user : ',user)
-#            db_read(user['user_name'])
-            db_user = db_read(request.user)
-        else:
-            db_user = {}
-    
-    user['user_name']           = db_user[0]
-    user['forename']             = db_user[5]
-    user['surname']             = db_user[6]
-    user['acceptedEmailContact']= db_user[11]                         # boolean (True in der DB wird zu 1)
-    user['organisation']        = db_user[9]
-    user['country']             = db_user[7]
-    user['language']            = db_user[8]
-    user['phone']               = db_user[10]
-    
-    return JsonResponse(user)
+            with connections['default'].cursor() as cursor:
+                query = "select {} from user_profiles where user_name='{}'".format(_queryhelper(), request.user.username)
+                cursor.execute(query)
+                db_res = cursor.fetchone()
+                user = dict()
+                cnt = 0
+                for col_entry in userdb_columns:
+                    user[col_entry] = db_res[cnt]
+                    cnt += 1
 
+                retv = JsonResponse(user)
+
+        else:
+            retv = HttpResponse('Unauthorized', status=401)
+    else:
+        retv = HttpResponse('Bad Request', status=400)
+
+    return retv
