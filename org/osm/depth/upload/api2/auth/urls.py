@@ -17,5 +17,5 @@ from django.urls import path
 from . import logindummy
 
 urlpatterns = [
-    path('', logindummy.richard, name ='richard'),
+    path('', logindummy.dummy, name ='dummy'),
 ]

@@ -6,6 +6,6 @@ Created on 05.02.2021
 
 from django.http import HttpResponse
  
-def richard(request):
+def dummy(request):
     HttpResponse.status_code = 200
     return HttpResponse("ok")

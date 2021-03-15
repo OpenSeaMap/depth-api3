@@ -20,8 +20,8 @@ Created on 06.03.2021
 
 
 from django.urls import path
-from . import users
+from org.osm.depth.upload.api2.users import create
 
 urlpatterns = [
-    path('', users.createUser, name ='createUser'),
+    path('', create.createUser, name ='createUser'),
 ]
