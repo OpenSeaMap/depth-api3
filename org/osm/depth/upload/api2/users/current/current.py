@@ -13,7 +13,7 @@ from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
 #import json
 import psycopg2
  
-user = {}
+#user = {}
 
 
 def db_read (db_cur_user):
@@ -37,6 +37,8 @@ def db_read (db_cur_user):
 @csrf_exempt
 @requires_csrf_token
 def getCurrentUser(request):
+    user = {}
+
     if request.method == 'GET':
         print('getCurrentUser: User von fetch: ', request.user)
         if request.user.is_authenticated:
