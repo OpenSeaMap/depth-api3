@@ -16,6 +16,7 @@ Created on 06.02.2021
 import environ
 from pathlib import Path
 from pickle import TRUE
+import os
 #from corsheaders.middleware import ACCESS_CONTROL_ALLOW_CREDENTIALS
 
 env = environ.Env()
@@ -24,7 +25,8 @@ environ.Env.read_env()  # reading .env file
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-STATIC_DIR = "/home/richard/OpenSeaMap/WebFrontend"         # RKu: Steffen
+STATIC_DIR = os.path.join(BASE_DIR, 'Frontend-to-depth3/')
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', default=False)
@@ -72,7 +74,6 @@ CORS_ALLOWED_ORIGINS = [                                    # RKu: neu, ersetzt 
 ]
 
 CORS_Allow_Credentials = True
-
 
 ROOT_URLCONF = 'depth3.urls'
 
@@ -160,4 +161,16 @@ STATICFILES_DIRS=[              # RKu: Steffen
 
 APPEND_SLASH=False
 
-
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+    },
+}
