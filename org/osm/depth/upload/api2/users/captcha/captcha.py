@@ -26,7 +26,7 @@ def sample_view_captcha(request):
     to_json_response['new_cptch_image'] = captcha_image_url(to_json_response['new_cptch_key'])
 
     logger.debug("Captcha key {}".format(to_json_response['new_cptch_key']))
-    logger.debug("Captcha image url{}".format(to_json_response['new_cptch_image'] ))
+    logger.debug("Captcha image url {}".format(to_json_response['new_cptch_image'] ))
 
     return HttpResponse(json.dumps(to_json_response),
                         content_type='application/json')

@@ -2,4 +2,4 @@
 *.pyc
 .project
 .pydevproject
-
+./depth3/.env

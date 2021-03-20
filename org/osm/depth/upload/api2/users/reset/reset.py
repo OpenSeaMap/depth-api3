@@ -6,12 +6,19 @@ Created on 03.03.2021
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
-#from django.contrib.auth import authenticate
-#from django.db import models
-import psycopg2
+from django.db import connections
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from django.core.mail import send_mail
+from org import _queryhelper, userdb_columns
 
 import json
+import environ
+import logging
+import random
+import string
 
+logger = logging.getLogger(__name__)
 
 #------------------------------------------------
 # main function 
@@ -20,41 +27,46 @@ import json
 @requires_csrf_token
 def reset_password(request):
 
-# hier muss noch eingefügt werden
+# 1. Prüfen ob der User überhaupt schon in der DB angelegt ist
 #
-# 1. Prüfen des User in der DB
-# 2. neues PW generieren und in die DB eintragen
-    newPW = get_newPW_string(24)                                                 # string of length 8
-    print(newPW)
+    with connections['osmapi'].cursor() as cursor:
+        test_Query = ("select * from user_profiles where user_name=%s;")
+        cursor.execute(test_Query, ("{}".format(request.POST['username']),))
+        db_record = cursor.fetchone()
+        if (db_record[0] != request.POST['username']):
+            HttpResponse.status_code = 404                      # 404 = not found
+            return HttpResponse('nein')
+        
+# 2. neues PW generieren
+#
+    newPW = get_newPW_string(24)  # string of length 8
+    logger.debug('Das neue Password lautet: {}'.format(newPW))
 
-# 3. neues PW per Mail an user senden
+# 3. neues PW in die 'osmapi' DB eintragen
+#
+    with connections['osmapi'].cursor() as cursor:
+        update = ("update user_profiles set password={} where user_name={};".format(newPW, request.POST['username']))
+    #    print(update)
+    #    cursor.execute(update)
+    #    connections['osmapi'].commit()                        # noch nicht in die DB schreiben ... erst wenn der Rest geht
 
-
-    data = request.body.decode('ascii') 
-#    print(data)   
-    str1 = data.split('=',2)
-    str2 = str1[1].split('&')
-    str3 = str2[0].replace('%40','@')
-    
-#    print('Function body: ',str1, str2, str2[0], str3)
-    to_user = str3
-    send_mail(to_user, newPW)
-    
+# 4. neues PW per Mail an user senden
+#
+    to_user = request.POST['username']
+    send_reset_mail(to_user, newPW)                             # send Mail to user
+    HttpResponse.status_code = 200
     return HttpResponse('ok')
 
 #------------------------------------------------
 # send eMail to user containing the new password
 #
-import smtplib, ssl
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 
-def send_mail(to_user, newPW):
-    port = 465                                                  # For SSL   / RKu: 587
-    smtp_server = "t.b.d"
-    sender_email = "t.b.d"                     # Enter your address /muss drinend geändert werden
-    receiver_email = str(to_user)                               # Enter receiver address
-    password = "t.b.d"                                       # input("Type your password and press enter: ")
+def send_reset_mail(to_user, newPW):
+    
+    env = environ.Env()
+    environ.Env.read_env()                      # reading .env file
+    sender_email = env.str('EMAIL_HOST_USER')   # Enter your address
+    receiver_email = str(to_user)               # Enter receiver address
 
     message = MIMEMultipart("alternative")
     message["Subject"] = "your OpenSeaMap - dept - password reset"
@@ -71,26 +83,17 @@ def send_mail(to_user, newPW):
     Your OpenSeaMap Team
     """.format(newPW)
     
-    message.attach(MIMEText(message_text1, "plain", _charset = 'utf-8'))
-    
-    context = ssl.create_default_context()
-    with smtplib.SMTP_SSL(smtp_server, port, context=context) as server:
-        server.login(sender_email, password)
-        server.sendmail(sender_email, receiver_email, message.as_string())
-        
+#    message.attach(MIMEText(message_text1, "plain", _charset='utf-8'))
+    send_mail(message["Subject"], message_text1, message["From"], [message["To"]])
+
 
 #------------------------------------------------
 # generate a character string with upper and lowercase characters
 #        
-import random
-import string
 
 def get_newPW_string(length):
     # With combination of lower and upper case
     newPW_str = ''.join(random.choice(string.ascii_letters) for i in range(length))
     return newPW_str
-
-
-
 
         

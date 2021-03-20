@@ -6,26 +6,25 @@ Created on 06.02.2021
 
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
-
 from django.contrib.auth import authenticate, login
+import logging
 
 @csrf_exempt
 @requires_csrf_token
 def check(request):
-    print('j_security_check: ', request.POST['j_username'], '  ', request.POST['j_password'], '   ', request.COOKIES)
+    logger = logging.getLogger(__name__)
+    
+#    print('j_security_check: ', request.POST['j_username'], '  ', request.POST['j_password'], '   ', request.COOKIES)
     c_user = authenticate(username=request.POST['j_username'], password=request.POST['j_password'])
     
     if c_user is not None:
         login(request, c_user)
-        print('wow, Du bist eingelogged')
-        return HttpResponse("ok")
+        logger.debug('wow, Du bist eingelogged')
+        HttpResponse.status_code = 200
+        return HttpResponse('ok')
     else:
-        print('login fehlgeschlagen')
-        return HttpResponse("nein")
+        logger.debug('login fehlgeschlagen')
+        HttpResponse.status_code = 403
+        return HttpResponse('login failed')
     
-#    if request.method == "POST" and request.is_ajax():
-#        HttpResponse.status_code = 200
-#        return HttpResponse("ok")
-#    else:
-#        HttpResponse.status_code = 400 
-#        return HttpResponse("false") 
+

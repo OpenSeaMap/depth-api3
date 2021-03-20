@@ -114,6 +114,14 @@ DATABASES = {                           # RKu: setzt die OSM DB als default
         'PASSWORD': env.str('DB_PASSWORD'),
         'HOST': env.str('DB_HOST'),
         'PORT': env.str('DB_PORT'),
+    },
+    'osmapi': {
+        'ENGINE': env.str('DB_OSMAPI_ENGINE'),
+        'NAME': env.str('DB_OSMAPI_NAME'),
+        'USER': env.str('DB_OSMAPI_USER'),
+        'PASSWORD': env.str('DB_OSMAPI_PASSWORD'),
+        'HOST': env.str('DB_OSMAPI_HOST'),
+        'PORT': env.str('DB_OSMAPI_PORT'),
     }
 }
 
@@ -173,4 +181,18 @@ LOGGING = {
         'handlers': ['console'],
         'level': 'DEBUG',
     },
+    'color': {
+        '()': 'colorlog.ColoredFormatter',
+        'format': '%(log_color)s%(levelname)-8s %(message)s',
+        'log_colors': {
+            'DEBUG':    'bold_black',
+            'INFO':     'white',
+            'WARNING':  'yellow',
+            'ERROR':    'red',
+            'CRITICAL': 'bold_red',
+            },
+    },
 }
+
+# https://stackoverflow.com/questions/1285372/how-does-one-make-logging-color-in-django-google-app-engine
+

@@ -7,22 +7,9 @@ Created on 08.02.2021
 from django.db import connections
 from django.http import JsonResponse
 from django.http.response import HttpResponse
-
-userdb_columns = ["user_name",
-                  "forename",
-                  "surname",
-                  "acceptedEmailContact",
-                  "organisation",
-                  "country",
-                  "language",
-                  'phone']
+from org import _queryhelper, userdb_columns
 
 
-def _queryhelper():
-    out = ""
-    for col_entry in userdb_columns:
-        out += col_entry + ","
-    return out[:-1]
 
 
 def getCurrentUser(request):
@@ -30,7 +17,7 @@ def getCurrentUser(request):
     if request.method == 'GET':
         print('getCurrentUser: User von fetch: ', request.user)
         if request.user.is_authenticated:
-            with connections['default'].cursor() as cursor:
+            with connections['osmapi'].cursor() as cursor:
                 query = "select {} from user_profiles where user_name='{}'".format(_queryhelper(), request.user.username)
                 cursor.execute(query)
                 db_res = cursor.fetchone()
