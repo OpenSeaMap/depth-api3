@@ -9,14 +9,10 @@ from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
 from django.contrib.auth import authenticate, login
 import logging
 
-@csrf_exempt
-@requires_csrf_token
+
 def check(request):
     logger = logging.getLogger(__name__)
-    
-#    print('j_security_check: ', request.POST['j_username'], '  ', request.POST['j_password'], '   ', request.COOKIES)
     c_user = authenticate(username=request.POST['j_username'], password=request.POST['j_password'])
-    
     if c_user is not None:
         login(request, c_user)
         logger.debug('wow, Du bist eingelogged')
@@ -26,5 +22,3 @@ def check(request):
         logger.debug('login fehlgeschlagen')
         HttpResponse.status_code = 403
         return HttpResponse('login failed')
-    
-

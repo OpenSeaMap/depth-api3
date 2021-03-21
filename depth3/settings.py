@@ -17,16 +17,13 @@ import environ
 from pathlib import Path
 from pickle import TRUE
 import os
-#from corsheaders.middleware import ACCESS_CONTROL_ALLOW_CREDENTIALS
 
 env = environ.Env()
 environ.Env.read_env()  # reading .env file
 
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_DIR = os.path.join(BASE_DIR, 'Frontend-to-depth3/')
-
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', default=False)
@@ -35,8 +32,7 @@ DEBUG = env.bool('DEBUG', default=False)
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 SECRET_KEY = env.str('SECRET_KEY')
-ALLOWED_HOSTS = ['*']                                       #RKu: set to '*'
-
+ALLOWED_HOSTS = ['*']  # RKu: set to '*'
 
 # Application definition
 
@@ -47,28 +43,28 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',                                              # RKu:
+    'corsheaders',  # RKu:
     'rest_framework',
-    'captcha',                                           # RKu:
+    'captcha',  # RKu:
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
 #    'django.middleware.common.CommonMiddleware',            # RKu:
-    'django.middleware.csrf.CsrfViewMiddleware',
+#    'django.middleware.csrf.CsrfViewMiddleware',            # disable csrf check until confilcts in sources are solved
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     
-    'corsheaders.middleware.CorsMiddleware',                # RKu: wichtig zuvor sudo pip3 install django-core-headers
+    'corsheaders.middleware.CorsMiddleware',  # RKu: wichtig zuvor sudo pip3 install django-core-headers
     'django.middleware.common.BrokenLinkEmailsMiddleware',  # RKu:
-    'django.middleware.common.CommonMiddleware',            # RKu:
+    'django.middleware.common.CommonMiddleware',  # RKu:
 ]
 
 # CORS_ORIGIN_ALLOW_ALL = True                                # RKu: normal False
 # CORS_ORIGIN_WHITELIST = [                                   # RKu: erlaubnis über die whitelist einstellen
-CORS_ALLOWED_ORIGINS = [                                    # RKu: neu, ersetzt whitelist
+CORS_ALLOWED_ORIGINS = [  # RKu: neu, ersetzt whitelist
     'http://localhost',
     'http://localhost:8000'
 ]
@@ -97,16 +93,16 @@ WSGI_APPLICATION = 'depth3.wsgi.application'
 
 # mail account settings
 EMAIL_BACKEND = env.str('EMAIL_BACKEND')
-EMAIL_HOST =  env.str('EMAIL_HOST')
-EMAIL_PORT =  env.str('EMAIL_PORT')
-EMAIL_HOST_USER =  env.str('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD =  env.str('EMAIL_HOST_PASSWORD')
+EMAIL_HOST = env.str('EMAIL_HOST')
+EMAIL_PORT = env.str('EMAIL_PORT')
+EMAIL_HOST_USER = env.str('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env.str('EMAIL_HOST_PASSWORD')
 EMAIL_USE_SSL = True
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
-DATABASES = {                           # RKu: setzt die OSM DB als default
+DATABASES = {  # RKu: setzt die OSM DB als default
     'default': {
         'ENGINE': env.str('DB_ENGINE'),
         'NAME': env.str('DB_NAME'),
@@ -143,7 +139,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
@@ -157,17 +152,16 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
-STATIC_URL = '/static/'         # RKu: Steffen
+STATIC_URL = '/static/'  # RKu: Steffen
 
-STATICFILES_DIRS=[              # RKu: Steffen
+STATICFILES_DIRS = [  # RKu: Steffen
     STATIC_DIR,
 ]
 
-APPEND_SLASH=False
+APPEND_SLASH = False
 
 LOGGING = {
     'version': 1,
@@ -185,14 +179,20 @@ LOGGING = {
         '()': 'colorlog.ColoredFormatter',
         'format': '%(log_color)s%(levelname)-8s %(message)s',
         'log_colors': {
-            'DEBUG':    'bold_black',
-            'INFO':     'white',
-            'WARNING':  'yellow',
-            'ERROR':    'red',
+            'DEBUG': 'bold_black',
+            'INFO': 'white',
+            'WARNING': 'yellow',
+            'ERROR': 'red',
             'CRITICAL': 'bold_red',
             },
     },
 }
 
-# https://stackoverflow.com/questions/1285372/how-does-one-make-logging-color-in-django-google-app-engine
+AUTHENTICATION_BACKENDS = (
+  'depthuserauth.depth_user_auth.LoginDepthBackend',
+)
 
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.SHA1PasswordHasher',
+    'django.contrib.auth.hashers.UnsaltedSHA1PasswordHasher'
+]

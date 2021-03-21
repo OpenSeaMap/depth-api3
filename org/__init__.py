@@ -7,7 +7,8 @@ userdb_columns = ["user_name",
                   "organisation",
                   "country",
                   "language",
-                  'phone']
+                  "phone",
+                  "password"]
 
 
 def _queryhelper():
