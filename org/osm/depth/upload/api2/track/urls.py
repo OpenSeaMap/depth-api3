@@ -22,4 +22,5 @@ from . import track
 
 urlpatterns = [
     path('', track.getTrack, name ='getTrack'),
+    path('/<str:null>', track.deleteTrack, name='deleteTrack'),
 ]
