@@ -128,7 +128,7 @@ def getTrack(request):
 #
 
     if request.method == 'PUT':
-        print('\nMethod PUT:  store Tracks: for User: ', request.user)
+        print('\nMethod PUT:  store Tracks: for User: {}'.format(request.user))
         try:
             with connections['osmapi'].cursor() as cursor:
 
@@ -136,8 +136,33 @@ def getTrack(request):
                     # Datei laden
                     # da weiß ich aber noch nicht wie es geht
                     #
-                    track_data = json.loads(request.body)
-                    print('Track_data: ', track_data)
+                    length=len(request.body)
+                    logging.debug('len = {}'.format(length)) 
+                    xx = request.body.decode("utf-8")
+                    logging.debug('Track_data: {}'.format(xx))
+                    
+                    x1 = xx.split('\r\n',1)                         # abtrennen: '------WebKitFormBoundaryP1coSr2qFeAFoAO8\r\n'
+                    x2 = x1[1].split('\r\n',1)                      # abtrennen: 'Content-Disposition: form-data; name="track"; filename="DATA0030.DAT"\r\n' 
+                    x3 = x2[1].split('\r\n\r\n',1)                  # abtrennen: 'Content-Type: application/octet-stream\r\n\r\n'  
+                    
+                    print('x1 : ', x1[0],';  x2 : ', x2[0], ';  x3 : ', x3[0])
+                    
+#                    z = x3[1].encode('utf-8')                       # change str back to byte
+                    z = x3[1]
+                    data = z.split('\r\n------',1)                  # abtrennen am Ende: '------WebKitFormBoundaryP1coSr2qFeAFoAO8\r\n'
+                    y = x2[0].split('filename="',1)
+                    name = y[1].split('"',1)
+#                    f = open(name[0], "wb+")                        # müssen wir in binary schreiben? Die NMEA Daten sind eigentlich String
+                    f = open(name[0], "w")
+                    f.write(data[0])
+                    f.close()
+                    
+                    t_id_Query = ("SELECT track_id FROM user_tracks WHERE file_ref=%s AND user_name=%s AND upload_state='0';")
+                    cursor.execute(t_id_Query, (name[0], str(request.user)),)
+                    track_id = cursor.fetchone()
+
+                    t_id_Set = ("UPDATE user_tracks SET upload_state = 1 WHERE track_id=%s;")
+                    cursor.execute(t_id_Set, (track_id))
 
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
@@ -146,7 +171,6 @@ def getTrack(request):
             if connections['osmapi'] is not None:
                 connections['osmapi'].close()
                 
-#            return JsonResponse(int(trackid[0]), safe=False)
             HttpResponse.status_code = 200
             return HttpResponse("OK")
 

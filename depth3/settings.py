@@ -196,3 +196,6 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.SHA1PasswordHasher',
     'django.contrib.auth.hashers.UnsaltedSHA1PasswordHasher'
 ]
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 2621440*10
+
