@@ -26,6 +26,7 @@ def getTrack(request):
 #    
     track = {}
     tracks = [{}]
+    ret_track = {}
 
     if request.method == 'GET':
         logging.debug('\nMethod GET:  load Tracks: for User: {}'.format(request.user))
@@ -104,8 +105,9 @@ def getTrack(request):
                         cursor.execute(new_trackid)
                         trackid = cursor.fetchone()
                         
+                        track['uploaddate'] = dt.now().isoformat()
                         track_Query = ("INSERT INTO user_tracks (track_id, user_name, uploaddate, vesselconfigid , license, file_ref ) VALUES (%s, %s, %s, %s, %s, %s);");
-                        cursor.execute(track_Query,(trackid[0], str(request.user), dt.now().isoformat(), track_data['vesselconfigid'], track_data['license'], track_data['fileName']))
+                        cursor.execute(track_Query,(trackid[0], str(request.user), track['uploaddate'], track_data['vesselconfigid'], track_data['license'], track_data['fileName']))
                         connections['osmapi'].commit()                      # Wichtig: commit the changes to the database
                         
                     print('Track : stored', dt.now().isoformat())
@@ -119,7 +121,24 @@ def getTrack(request):
             if connections['osmapi'] is not None:
                 connections['osmapi'].close()
                 
-            return JsonResponse(int(trackid[0]), safe=False)
+            track['id']             = trackid[0]
+            track['fileName']       = track_data['fileName']
+#            track['fileType']       = 0
+#            track['compression']    = 0
+            track['containertrack'] = 0
+            track['license']        = 1
+            track['upload_state']   = 0
+            track['vesselconfigid'] = track_data['vesselconfigid']
+            track['uploaddate']     = track['uploaddate']
+            track['num_points']     = 0
+#            track['track_info']     = 0
+            track['left']           = 0
+            track['right']          = 0
+            track['top']            = 0
+            track['bottom']         = 0
+            
+            HttpResponse.status_code = 200
+            return JsonResponse(track, safe=False)
 
 
 #------------------------------------------------
@@ -171,8 +190,9 @@ def getTrack(request):
             if connections['osmapi'] is not None:
                 connections['osmapi'].close()
                 
+            print(len(data[0]))
             HttpResponse.status_code = 200
-            return HttpResponse("OK")
+            return HttpResponse(len(data[0]))                       # hier soll die Länge der Datei an das Frontend zurück gegeben werden
 
 
 @csrf_exempt
