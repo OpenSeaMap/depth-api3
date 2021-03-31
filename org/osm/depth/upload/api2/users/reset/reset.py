@@ -15,6 +15,7 @@ from org import _queryhelper, userdb_columns
 import json
 import environ
 import logging
+import hashlib
 import random
 import string
 
@@ -41,14 +42,18 @@ def reset_password(request):
 #
     newPW = get_newPW_string(24)  # string of length 8
     logger.debug('Das neue Password lautet: {}'.format(newPW))
+    
+    bytePW = newPW.encode('utf-8')          # umwandeln in unicode byte string
+    hashPW = hashlib.sha1(bytePW)           # hash generieren
+#    jQuery.encoding.digests.hexSha1Str(params.neuPassword1).toLowerCase()
+    newPWSha1 = hashPW.hexdigest()          # hash in hex Digits umwandeln für das speichern in der DB
 
 # 3. neues PW in die 'osmapi' DB eintragen
 #
     with connections['osmapi'].cursor() as cursor:
-        update = ("update user_profiles set password={} where user_name={};".format(newPW, request.POST['username']))
-    #    print(update)
-    #    cursor.execute(update)
-    #    connections['osmapi'].commit()                        # noch nicht in die DB schreiben ... erst wenn der Rest geht
+        update = ("update user_profiles set password='{}' where user_name='{}';".format(newPWSha1, request.POST['username']))
+        cursor.execute(update)
+        connections['osmapi'].commit()                        # noch nicht in die DB schreiben ... erst wenn der Rest geht
 
 # 4. neues PW per Mail an user senden
 #

@@ -26,7 +26,6 @@ def getTrack(request):
 #    
     track = {}
     tracks = [{}]
-    ret_track = {}
 
     if request.method == 'GET':
         logging.debug('\nMethod GET:  load Tracks: for User: {}'.format(request.user))
@@ -58,7 +57,7 @@ def getTrack(request):
                         track['bottom']         = track_record[25]
                     
                         tracks.insert(i, dict(track))
-#                        print('tracks[i]: bei ',i ,' = ', track[i])
+#                        logging.debug('tracks[i]: bei {} = {}'.format(i, track[i]))
                         i += 1
                         track_record = cursor.fetchone()
 #                        logger.debug('Track : von I = {}  {}'.format(i, track))
@@ -97,8 +96,7 @@ def getTrack(request):
                     cursor.execute(license_Query, (str(request.user), track_data['license']),)
                     license_id = cursor.fetchone()
                     
-#                    print('vessel_id: ',vessel_id, ' license_id: ', license_id)
-                    logging.debug('vessel_id: {} license_id: {}'.format(vessel_id, license_id))
+                    logging.debug('vessel_id: {}; license_id: {};'.format(vessel_id, license_id))
                     if int(vessel_id[0]) and int(license_id[0]):                    # tuple nach int convertieren
                         logging.debug('OK vessel_id und license_id sind vorhanden')
                         new_trackid = ("SELECT nextval('user_tracks_track_id_seq');")
@@ -110,9 +108,7 @@ def getTrack(request):
                         cursor.execute(track_Query,(trackid[0], str(request.user), track['uploaddate'], track_data['vesselconfigid'], track_data['license'], track_data['fileName']))
                         connections['osmapi'].commit()                      # Wichtig: commit the changes to the database
                         
-                    print('Track : stored', dt.now().isoformat())
-
-
+                    logging.debug('Track : stored at {}'.format(dt.now().isoformat()))
 
         except (Exception, psycopg2.DatabaseError) as error:
             logging.debug(error)
@@ -147,7 +143,7 @@ def getTrack(request):
 #
 
     if request.method == 'PUT':
-        print('\nMethod PUT:  store Tracks: for User: {}'.format(request.user))
+        logging.debug('\nMethod PUT:  store Tracks: for User: {}'.format(request.user))
         try:
             with connections['osmapi'].cursor() as cursor:
 
@@ -164,7 +160,7 @@ def getTrack(request):
                     x2 = x1[1].split('\r\n',1)                      # abtrennen: 'Content-Disposition: form-data; name="track"; filename="DATA0030.DAT"\r\n' 
                     x3 = x2[1].split('\r\n\r\n',1)                  # abtrennen: 'Content-Type: application/octet-stream\r\n\r\n'  
                     
-                    print('x1 : ', x1[0],';  x2 : ', x2[0], ';  x3 : ', x3[0])
+#                    logging.debug('x1 : {};  x2 : {};  x3 : {};'.format(x1[0], x2[0], x3[0]))
                     
 #                    z = x3[1].encode('utf-8')                       # change str back to byte
                     z = x3[1]
@@ -184,13 +180,13 @@ def getTrack(request):
                     cursor.execute(t_id_Set, (track_id))
 
         except (Exception, psycopg2.DatabaseError) as error:
-            print(error)
+            logging.debug(error)
         
         finally:
             if connections['osmapi'] is not None:
                 connections['osmapi'].close()
                 
-            print(len(data[0]))
+            logging.debug(len(data[0]))
             HttpResponse.status_code = 200
             return HttpResponse(len(data[0]))                       # hier soll die Länge der Datei an das Frontend zurück gegeben werden
 
@@ -199,26 +195,65 @@ def getTrack(request):
 @requires_csrf_token
 def deleteTrack(request, null):
     
+    trackId = null
+    
     if request.method == 'DELETE':
-        logging.debug('\nDelete Track: {}'.format(null))
+        logging.debug('\nDelete Track: {}'.format(trackId))
         try:
             with connections['osmapi'].cursor() as cursor:
         
                 del_track_Query = "DELETE from user_tracks where track_id=%s AND user_name=%s;"
-                cursor.execute(del_track_Query, (null, "{}".format(request.user)))
+                cursor.execute(del_track_Query, (trackId, "{}".format(request.user)))
                 connections['osmapi'].commit()                      # Wichtig: commit the changes to the database 
                 
-                # Das muss noch gemacht werden.
-                # Wie werden diese Felder überhaupt befüllt
+            """
+                # Das muss noch scharf geschaltet werden, sobald der Prozess aktiv ist, der diese DB- Records befüllt
+                # Wie werden diese Felder überhaupt befüllt?
+                # Wer macht das wann?
                 #
-                # "DELETE FROM trackpoints_raw_8 WHERE datasetid = ?"  trackId
-                # "DELETE FROM trackpoints_raw_10 WHERE datasetid = ?"
-                # "DELETE FROM trackpoints_raw_12 WHERE datasetid = ?"
-                # "DELETE FROM trackpoints_raw_16 WHERE datasetid = ?"
-                # "DELETE FROM trackpoints_raw_filter_8 WHERE datasetid = ?"
-                # "DELETE FROM trackpoints_raw_filter_10 WHERE datasetid = ?"
-                # "DELETE FROM trackpoints_raw_filter_12 WHERE datasetid = ?"
-                # "DELETE FROM trackpoints_raw_filter_16 WHERE datasetid = ?"
+                # Achtung: noch nicht getestet !!!
+                #
+                with connections['depth'].cursor() as cursor:
+                    try:
+                        del_Query = "DELETE FROM trackpoints_raw_8 WHERE datasetid =%s;"
+                        cursor.execute(del_Query, (trackId))
+                        connections['depth'].commit()
+
+                        del_Query = "DELETE FROM trackpoints_raw_10 WHERE datasetid =%s;"
+                        cursor.execute(del_Query, (trackId))
+                        connections['depth'].commit()
+
+                        del_Query = "DELETE FROM trackpoints_raw_12 WHERE datasetid =%s;"
+                        cursor.execute(del_Query, (trackId))
+                        connections['depth'].commit()
+
+                        del_Query = "DELETE FROM trackpoints_raw_16 WHERE datasetid =%s;"
+                        cursor.execute(del_Query, (trackId))
+                        connections['depth'].commit()
+
+                        del_Query = "DELETE FROM trackpoints_raw_filter_8 WHERE datasetid =%s;"
+                        cursor.execute(del_Query, (trackId))
+                        connections['depth'].commit()
+
+                        del_Query = "DELETE FROM trackpoints_raw_filter_10 WHERE datasetid =%s;"
+                        cursor.execute(del_Query, (trackId))
+                        connections['depth'].commit()
+
+                        del_Query = "DELETE FROM trackpoints_raw_filter_12 WHERE datasetid =%s;"
+                        cursor.execute(del_Query, (trackId))
+                        connections['depth'].commit()
+
+                        del_Query = "DELETE FROM trackpoints_raw_filter_16 WHERE datasetid =%s;"
+                        cursor.execute(del_Query, (trackId))
+                        connections['depth'].commit()
+
+                    except (Exception, psycopg2.DatabaseError) as error:
+                        logging.debug(error)
+        
+                    finally:
+                        if connections['depth'] is not None:
+                            connections['depth'].close()
+            """
         
         except (Exception, psycopg2.DatabaseError) as error:
             logging.debug(error)

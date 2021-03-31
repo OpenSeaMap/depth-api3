@@ -34,11 +34,10 @@ def changePassword(request):
                 if old_pw == request.POST['oldPassword']:
                     logger.debug('Die PW sind gleich !')
                     pw_query = ("update user_profiles set password='{}' where user_name='{}';".format(request.POST['newPassword'], request.user))
-#                    print(pw_query)
-#                    cursor.execute(pw_query)
-#                    connections['osmapi'].commit()
+                    cursor.execute(pw_query)
+                    connections['osmapi'].commit()
                 else:
-                    logger.debug('Die alte Passwort ist nicht mit der Datenbank identisch')
+                    logger.debug('Das alte Passwort ist nicht mit der Datenbank identisch')
                     HttpResponse.status_code = 409                      # 409 = conflict
                     return HttpResponse("nein")
                     

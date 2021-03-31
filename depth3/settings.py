@@ -118,6 +118,14 @@ DATABASES = {  # RKu: setzt die OSM DB als default
         'PASSWORD': env.str('DB_OSMAPI_PASSWORD'),
         'HOST': env.str('DB_OSMAPI_HOST'),
         'PORT': env.str('DB_OSMAPI_PORT'),
+    },
+    'depth': {
+        'ENGINE': env.str('DB_DEPTH_ENGINE'),
+        'NAME': env.str('DB_DEPTH_NAME'),
+        'USER': env.str('DB_DEPTH_USER'),
+        'PASSWORD': env.str('DB_DEPTH_PASSWORD'),
+        'HOST': env.str('DB_DEPTH_HOST'),
+        'PORT': env.str('DB_DEPTH_PORT'),
     }
 }
 

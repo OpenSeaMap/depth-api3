@@ -24,6 +24,7 @@ urlpatterns = [
     path('org.osm.depth.upload/api2/auth/logout', include('org.osm.depth.upload.api2.auth.logout.urls')),
     path('org.osm.depth.upload/api2/j_security_check', include('org.osm.depth.upload.api2.j_security_check.urls')),
     path('org.osm.depth.upload/api2/license', include('org.osm.depth.upload.api2.license.urls')),
+    path('org.osm.depth.upload/api2/gauge', include('org.osm.depth.upload.api2.gauge.urls')),
     path('org.osm.depth.upload/api2/track', include('org.osm.depth.upload.api2.track.urls')),
     path('org.osm.depth.upload/api2/users', include('org.osm.depth.upload.api2.users.urls')),
     path('org.osm.depth.upload/api2/users/current', include('org.osm.depth.upload.api2.users.current.urls')),
