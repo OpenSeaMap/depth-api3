@@ -5,7 +5,7 @@ Created on 06.03.2021
 '''
 
 from django.db import connections
-#from django.http import HttpResponse
+from django.http import HttpResponse
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
 #from django.contrib.auth import authenticate
@@ -36,6 +36,11 @@ def db_write (user):
 @csrf_exempt
 @requires_csrf_token
 def createUser(request):
+    
+    if (request.POST['captcha'] != request.session['captcha_rk']):  # Stimmt das gesendete captcha mit dem eingegebenen überein?
+        HttpResponse.status_code = 401                              # 401 = captcha falsch: Unauthorized access
+        return HttpResponse('nein')
+
     if request.method == 'POST':
         user['username']                = request.POST['username']
         user['password']                = request.POST['password']

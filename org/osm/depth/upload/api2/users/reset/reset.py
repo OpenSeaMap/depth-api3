@@ -19,7 +19,9 @@ import hashlib
 import random
 import string
 
+
 logger = logging.getLogger(__name__)
+global captcha_rk
 
 #------------------------------------------------
 # main function 
@@ -28,6 +30,7 @@ logger = logging.getLogger(__name__)
 @requires_csrf_token
 def reset_password(request):
 
+    
 # 1. Prüfen ob der User überhaupt schon in der DB angelegt ist
 #
     with connections['osmapi'].cursor() as cursor:
@@ -36,6 +39,11 @@ def reset_password(request):
         db_record = cursor.fetchone()
         if (db_record[0] != request.POST['username']):
             HttpResponse.status_code = 404                      # 404 = not found
+            return HttpResponse('nein')
+        
+        # Stimmt das gesendete captcha mit dem eingegebenen überein?
+        if (request.POST['captcha'] != request.session['captcha_rk']):
+            HttpResponse.status_code = 401                      # 401 = captcha falsch: Unauthorized access
             return HttpResponse('nein')
         
 # 2. neues PW generieren

@@ -205,5 +205,10 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.UnsaltedSHA1PasswordHasher'
 ]
 
+CAPTCHA_LENGTH = 6
+CAPTCHA_IMAGE_SIZE = (200, 80)
+CAPTCHA_NOISE_FUNCTIONS = ( 'captcha.helpers.noise_dots',)
+
+
 DATA_UPLOAD_MAX_MEMORY_SIZE = 2621440*10
 

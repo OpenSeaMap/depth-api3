@@ -13,8 +13,18 @@ from datetime import datetime as dt
 import psycopg2
 import logging
 import json
+import time
+import datetime
 
 logger = logging.getLogger(__name__)
+
+
+#
+#    aktuelle Pegelstände können von www.Pegelonline.wsv.de in verschiedenen Formen herunter geladen werden.
+#    dies war einmal vorgesehen, kam jedoch aus einer frühen Testphase nicht heraus
+#    und wurde zunächst nicht weiter verfolgt
+#    Sollte in einer späteren Version verfolgt werden.
+#
 
 @csrf_exempt
 @requires_csrf_token
@@ -22,7 +32,7 @@ def getGauges(request):
     
 #------------------------------------------------
 #
-#    Gauge laden
+#    verfügbare Pegen von der Datenbank laden und den Frontend zur Visualisierung übergeben
 #    
     gauge = {}
     gauges = [{}]
@@ -72,7 +82,7 @@ def getGaugeMeasurement(request, null):
     
 #------------------------------------------------
 #
-#    Gauge laden
+#    spezifischen Pegelstand von der Datenbank laden und dem Frontend zur Visualisierung übergeben 
 #
     list = {}
     lists = [{}]
@@ -89,14 +99,20 @@ def getGaugeMeasurement(request, null):
             
                     i = 0                   
                     while list_record is not None:            
-                        list['id']     = list_record[0]
-                        list['value']  = list_record[1]
-                        list['time']   = list_record[2].strftime('%Y-%m-%d::%H-%M')
+                        list['gaugeId']     = list_record[0]
+                        list['value']       = list_record[1]
+                        list['timestamp']   = int(time.mktime(datetime.datetime.strptime(str(list_record[2]), "%Y-%m-%d %H:%M:%S").timetuple()))*1000
+                        list['lengthunit']  = str('METERS')
 
+#                        Achtung:
+#                        mktime() geht immer von der lokalen Zeitzone aus.
+#                        Da mir derzeit nicht bekannt ist, in welcher Zeitzone die alten Daten der DB liegen
+#                        habe ich zunächst auf eine Umrechnung nach UTC verzichtet
+                
                         lists.insert(i, dict(list))
                         i += 1
                         list_record = cursor.fetchone()
-                        logger.debug('Gauge : von I = {}  {}'.format(i, list))
+#                        logger.debug('Gauge : von I = {}  {}'.format(i, list))
                         
                 lists.pop()                
                 
