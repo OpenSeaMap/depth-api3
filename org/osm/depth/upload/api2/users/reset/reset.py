@@ -10,7 +10,7 @@ from django.db import connections
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from django.core.mail import send_mail
-from org import _queryhelper, userdb_columns
+from org import _queryhelper, userdb_columns, CaptchaTestForm
 
 import json
 import environ
@@ -39,13 +39,24 @@ def reset_password(request):
         db_record = cursor.fetchone()
         if (db_record[0] != request.POST['username']):
             HttpResponse.status_code = 404                      # 404 = not found
-            return HttpResponse('nein')
+            return HttpResponse('User name not found at database')
         
-        # Stimmt das gesendete captcha mit dem eingegebenen überein?
+#        if request.POST:
+#            form = CaptchaTestForm(request.POST)
+#            if not form.is_valid():                             # Validate the form: the captcha field will automatically
+#                print('captcha ungültig')                         # check the input
+#                HttpResponse.status_code = 401                  # 401 = captcha falsch: Unauthorized access
+#                return HttpResponse('Captcha did not match')
+                
+#        # Stimmt das gesendete captcha mit dem eingegebenen überein?
         if (request.POST['captcha'] != request.session['captcha_rk']):
             HttpResponse.status_code = 401                      # 401 = captcha falsch: Unauthorized access
-            return HttpResponse('nein')
+            return HttpResponse('Captcha did not match')
         
+#    HttpResponse.status_code = 200
+#    return HttpResponse('nur Test')
+
+
 # 2. neues PW generieren
 #
     newPW = get_newPW_string(24)  # string of length 8

@@ -212,3 +212,5 @@ CAPTCHA_NOISE_FUNCTIONS = ( 'captcha.helpers.noise_dots',)
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 2621440*10
 
+UPLOAD_PATH = env.str('UPLOAD_PATH')
+

@@ -39,7 +39,7 @@ def createUser(request):
     
     if (request.POST['captcha'] != request.session['captcha_rk']):  # Stimmt das gesendete captcha mit dem eingegebenen überein?
         HttpResponse.status_code = 401                              # 401 = captcha falsch: Unauthorized access
-        return HttpResponse('nein')
+        return HttpResponse('Captcha did not match')
 
     if request.method == 'POST':
         user['username']                = request.POST['username']
@@ -54,6 +54,7 @@ def createUser(request):
         
         logger.debug('Record neuer User: {}'.format(user))
         db_write(user)
-    
-    return JsonResponse('ok', safe=False)
+
+        HttpResponse.status_code = 200                              # 
+        return HttpResponse('ok')
 
