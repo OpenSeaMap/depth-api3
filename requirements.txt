@@ -1,0 +1,7 @@
+Django
+djangorestframework
+django-environ
+django-cors-headers
+django-simple-captcha
+ciso8601
+psycopg2

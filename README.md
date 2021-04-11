@@ -24,8 +24,9 @@ EMAIL_HOST_PASSWORD = "12345678"
 ```
 
 # requirements
+the following command install all required libraries
 ```
-pip3 install django-environ django-cors-headers django-simple-captcha
+pip3 install --no-cache-dir -r requirements.txt
 ```
 
 # Test
