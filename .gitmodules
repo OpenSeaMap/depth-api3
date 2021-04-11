@@ -1,3 +1,3 @@
 [submodule "Frontend-to-depth3"]
 	path = Frontend-to-depth3
-	url = git@github.com:wldlzi/Frontend-to-depth3.git
+	url = https://github.com/wldlzi/Frontend-to-depth3.git
