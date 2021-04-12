@@ -15,7 +15,6 @@ Created on 06.02.2021
 """
 import environ
 from pathlib import Path
-from pickle import TRUE
 import os
 
 env = environ.Env()
@@ -43,7 +42,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',  # RKu:
     'rest_framework',
     'captcha',  # RKu:
 ]
@@ -51,25 +49,13 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-#    'django.middleware.common.CommonMiddleware',            # RKu:
-#    'django.middleware.csrf.CsrfViewMiddleware',            # disable csrf check until confilcts in sources are solved
+    # 'django.middleware.csrf.CsrfViewMiddleware',            # sv: disable csrf check until confilcts in sources are solved
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    
-    'corsheaders.middleware.CorsMiddleware',  # RKu: wichtig zuvor sudo pip3 install django-core-headers
     'django.middleware.common.BrokenLinkEmailsMiddleware',  # RKu:
-    'django.middleware.common.CommonMiddleware',  # RKu:
+    'django.middleware.common.CommonMiddleware',
 ]
-
-# CORS_ORIGIN_ALLOW_ALL = True                                # RKu: normal False
-# CORS_ORIGIN_WHITELIST = [                                   # RKu: erlaubnis über die whitelist einstellen
-CORS_ALLOWED_ORIGINS = [  # RKu: neu, ersetzt whitelist
-    'http://localhost',
-    'http://localhost:8000'
-]
-
-CORS_Allow_Credentials = True
 
 ROOT_URLCONF = 'depth3.urls'
 
@@ -171,12 +157,31 @@ STATICFILES_DIRS = [  # RKu: Steffen
 
 APPEND_SLASH = False
 
+LOGFILENAME = env.str('LOGFILENAME', default="./logging/osmapi.log")
+
+# ensure that logging path exists
+directory = os.path.dirname(LOGFILENAME)
+if not os.path.exists(directory):
+    os.makedirs(directory)
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+        },
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': LOGFILENAME,
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
         },
     },
     'root': {
@@ -207,11 +212,11 @@ PASSWORD_HASHERS = [
 
 CAPTCHA_LENGTH = 6
 CAPTCHA_IMAGE_SIZE = (200, 80)
-CAPTCHA_NOISE_FUNCTIONS = ( 'captcha.helpers.noise_dots',)
+CAPTCHA_NOISE_FUNCTIONS = ('captcha.helpers.noise_dots',)
 
 SILENCED_SYSTEM_CHECKS = ['captcha.recaptcha_test_key_error']
 
-DATA_UPLOAD_MAX_MEMORY_SIZE = 2621440*10
+DATA_UPLOAD_MAX_MEMORY_SIZE = 2621440 * 10
 
 UPLOAD_PATH = env.str('UPLOAD_PATH')
 
