@@ -5,19 +5,18 @@ Created on 01.03.2021
 '''
 import json
 import logging
-import requests
 import base64
+import requests
 
 from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
+from django.views.decorators.csrf import csrf_exempt
 from captcha.models import CaptchaStore
 from captcha.helpers import captcha_image_url
 
-
 logger = logging.getLogger(__name__)
 
+
 @csrf_exempt
-@requires_csrf_token
 def view_captcha(request):
 
     to_json_response = dict()
@@ -28,7 +27,7 @@ def view_captcha(request):
 
     # save a persistent copy of the captcha key for later verification (at function "reset")
     response = CaptchaStore.objects.get(hashkey=to_json_response['new_cptch_key']).response.upper()
-    request.session['captcha_rk'] = response    
+    request.session['captcha_rk'] = response
 
     logger.debug("Captcha key {}".format(to_json_response['new_cptch_key']))
     logger.debug("Captcha image url {}".format(to_json_response['new_cptch_image']))
@@ -46,5 +45,3 @@ def view_captcha(request):
     logger.debug(c_response)
     HttpResponse.status_code = 200
     return HttpResponse(json.dumps(c_response), content_type='application/json')
-
-

@@ -209,6 +209,7 @@ CAPTCHA_LENGTH = 6
 CAPTCHA_IMAGE_SIZE = (200, 80)
 CAPTCHA_NOISE_FUNCTIONS = ( 'captcha.helpers.noise_dots',)
 
+SILENCED_SYSTEM_CHECKS = ['captcha.recaptcha_test_key_error']
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 2621440*10
 
