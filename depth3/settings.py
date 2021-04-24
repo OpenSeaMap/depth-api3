@@ -216,6 +216,8 @@ CAPTCHA_NOISE_FUNCTIONS = ('captcha.helpers.noise_dots',)
 
 SILENCED_SYSTEM_CHECKS = ['captcha.recaptcha_test_key_error']
 
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
 DATA_UPLOAD_MAX_MEMORY_SIZE = 2621440 * 10
 
 UPLOAD_PATH = env.str('UPLOAD_PATH')
