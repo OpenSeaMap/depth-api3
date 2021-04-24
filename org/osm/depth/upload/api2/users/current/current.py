@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 def getCurrentUser(request):
 
     if request.method == 'GET':
-        logging.debug('getCurrentUser: User von fetch: {}'.format(request.user))
+        logger.debug('getCurrentUser: User von fetch: {}'.format(request.user))
         if request.user.is_authenticated:
             with connections['osmapi'].cursor() as cursor:
                 query = "select {} from user_profiles where user_name='{}'".format(_queryhelper(), request.user.username)

@@ -37,18 +37,18 @@ def VesselConfig(request):
 @csrf_exempt
 @requires_csrf_token
 def vessel_mit_null(request,null):
-    logging.debug('mit_null {}'.format(null))
+    logger.debug('mit_null {}'.format(null))
     
     if request.method == 'DELETE':
-        logging.debug('Methode "DELETE" mit ID : {}'.format(int(null)))
+        logger.debug('Methode "DELETE" mit ID : {}'.format(int(null)))
         return (deleteVesselConfig(request,int(null)))              # 'null' enthält in diesem Fall die Vessel_id -> daher integer
 
     elif request.method == 'POST':
-        logging.debug('Methode "POST" mit ID "null": ')
+        logger.debug('Methode "POST" mit ID "null": ')
         return (createVesselConfigWithNullId(request))
 
     elif request.method == 'PUT':
-        logging.debug('Methode "PUT" die ID lautet: {}'.format(int(null)))
+        logger.debug('Methode "PUT" die ID lautet: {}'.format(int(null)))
 #        return JsonResponse("PUT ok", safe=False)
         return (updateVesselConfig(request,int(null)))              # 'null' enthält in diesem Fall die Vessel_id -> daher integer
 
@@ -76,7 +76,7 @@ def getVesselConfig(request):
 
                 i = 0            
                 while db_vessel is not None:
-#                    logging.debug('vesselconfig - updateVesselConfig: {}'.format(db_vessel))
+#                    logger.debug('vesselconfig - updateVesselConfig: {}'.format(db_vessel))
         
                     newsbasoffset['distanceFromStern']  = db_vessel[14]
                     newsbasoffset['distanceFromCenter'] = db_vessel[13]
@@ -112,17 +112,17 @@ def getVesselConfig(request):
 #                    vessels[i] = dict(vessel)                   # das ist es. hey das hat mich Nerven gekostet
                     vessels.insert(i, dict(vessel))        # das geht auch
 
-                    logging.debug('vessels[i]: bei {} = {}'.format(i, vessels[i]))
+                    logger.debug('vessels[i]: bei {} = {}'.format(i, vessels[i]))
                     i += 1
                     db_vessel = cursor.fetchone()
                 
                 vessels.pop()
-#                logging.debug(vessels)
+#                logger.debug(vessels)
             else:
-                logging.debug('vesselconfig - updateVesselConfig: no data')
+                logger.debug('vesselconfig - updateVesselConfig: no data')
             
     except (Exception, psycopg2.DatabaseError) as error:
-        logging.debug(error)
+        logger.debug(error)
         
     finally:
         if connections['osmapi'] is not None:
@@ -134,21 +134,21 @@ def getVesselConfig(request):
 @csrf_exempt
 @requires_csrf_token
 def createVesselConfigWithNullId(request):
-    logging.debug('vesselconfig - createVesselConfigWithNullId: ')
+    logger.debug('vesselconfig - createVesselConfigWithNullId: ')
 
     try:
         with connections['osmapi'].cursor() as cursor:
 
             if request.user.is_authenticated:
-                logging.debug('User = {}'.format(request.user))
+                logger.debug('User = {}'.format(request.user))
 
                 vessel_data = json.loads(request.body)
                 sbas = vessel_data['sbasoffset']
                 depth = vessel_data['depthoffset']
             
-                logging.debug('Vessel Data  : {}'.format(vessel_data))
-                logging.debug('sbas offsets : {}'.format(sbas))
-                logging.debug('dept offsets : {}'-format(depth))
+                logger.debug('Vessel Data  : {}'.format(vessel_data))
+                logger.debug('sbas offsets : {}'.format(sbas))
+                logger.debug('dept offsets : {}'.format(depth))
 
                 vessel_type = '1'                               # wird nicht vom Frontend übergeben
                 vessel_data['maximumspeed'] = '7.5'             # wird nicht vom Frontend übergeben
@@ -169,7 +169,7 @@ def createVesselConfigWithNullId(request):
 
     
     except (Exception, psycopg2.DatabaseError) as error:
-        logging.debug(error)
+        logger.debug(error)
         
     finally:
         if connections['osmapi'] is not None:
@@ -183,7 +183,7 @@ def createVesselConfigWithNullId(request):
 @requires_csrf_token
 def updateVesselConfig(request, vessel_id):
     
-    logging.debug('vesselconfig - createVesselConfig: ')
+    logger.debug('vesselconfig - createVesselConfig: ')
     
     try:
         with connections['osmapi'].cursor() as cursor:
@@ -192,9 +192,9 @@ def updateVesselConfig(request, vessel_id):
             sbas = vessel_data['sbasoffset']
             depth = vessel_data['depthoffset']
 
-            logging.debug('Vessel Data  : {}'.format(vessel_data))
-            logging.debug('sbas offsets : {}'.format(sbas))
-            logging.debug('dept offsets : {}'-format(depth))
+            logger.debug('Vessel Data  : {}'.format(vessel_data))
+            logger.debug('sbas offsets : {}'.format(sbas))
+            logger.debug('dept offsets : {}'.format(depth))
 
             vessel_data['vesselType'] = '1'                     # nur eine dummy Angabe -- hier gibt das Frontend falsche Daten
             vessel_data['maximumspeed'] = '7.5'                 # nur eine dummy Angabe -- hier gibt das Frontend keine Daten
@@ -213,7 +213,7 @@ def updateVesselConfig(request, vessel_id):
             connections['osmapi'].commit()                      # Wichtig: commit the changes to the database
 
     except (Exception, psycopg2.DatabaseError) as error:
-        logging.debug(error)
+        logger.debug(error)
         
     finally:
         if connections['osmapi'] is not None:
@@ -227,7 +227,7 @@ def updateVesselConfig(request, vessel_id):
 @requires_csrf_token
 def deleteVesselConfig(request,del_id):
 
-    logging.debug('vesselconfig - deleteVesselConfig: {}'.format(del_id))
+    logger.debug('vesselconfig - deleteVesselConfig: {}'.format(del_id))
     
     try:
         with connections['osmapi'].cursor() as cursor: 
@@ -237,10 +237,10 @@ def deleteVesselConfig(request,del_id):
 
             return_id = cursor.fetchone()[0]                    # get the generated id back
             connections['osmapi'].commit()                      # Wichtig: commit the changes to the database
-#            logging.debug('Der Record {} wurde gelöscht.'.format(return_id)
+#            logger.debug('Der Record {} wurde gelöscht.'.format(return_id)
     
     except (Exception, psycopg2.DatabaseError) as error:
-        logging.debug(error)
+        logger.debug(error)
         
     finally:
         if connections['osmapi'] is not None:

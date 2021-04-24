@@ -38,7 +38,7 @@ def getGauges(request):
     gauges = [{}]
 
     if request.method == 'GET':
-        logging.debug('\nMethod GET:  load Gauges: for User: {}'.format(request.user))
+        logger.debug('\nMethod GET:  load Gauges: for User: {}'.format(request.user))
         try:
             with connections['osmapi'].cursor() as cursor:
                 if request.user.is_authenticated:
@@ -46,7 +46,7 @@ def getGauges(request):
                     gauge_Query = ("SELECT id, name, gaugetype, waterlevel, lat, lon FROM gauge;")
                     cursor.execute(gauge_Query, ("{}".format(request.user),))
                     gauge_record = cursor.fetchone()
-                    logging.debug('Gauge : {}'.format(gauge_record))
+                    logger.debug('Gauge : {}'.format(gauge_record))
             
                     i = 0            
                     while gauge_record is not None:            
@@ -65,7 +65,7 @@ def getGauges(request):
                 gauges.pop()
                     
         except (Exception, psycopg2.DatabaseError) as error:
-            logging.debug(error)
+            logger.debug(error)
         
         finally:
             if connections['osmapi'] is not None:
@@ -88,14 +88,14 @@ def getGaugeMeasurement(request, null):
     lists = [{}]
     
     if request.method == 'GET':
-        logging.debug('\nMethod GET:  load Gauge Measurement: of Gauge: {} - for User: {}'.format(null, request.user))
+        logger.debug('\nMethod GET:  load Gauge Measurement: of Gauge: {} - for User: {}'.format(null, request.user))
         try:
             with connections['osmapi'].cursor() as cursor:
                 if request.user.is_authenticated:
                     list_Query = ("SELECT gaugeid, value, time FROM gaugemeasurement g WHERE gaugeid = %s ORDER BY time DESC;")
                     cursor.execute(list_Query, ("{}".format(null),))     # 673
                     list_record = cursor.fetchone()
-                    logging.debug('Gauge : {}'.format(list_record))
+                    logger.debug('Gauge : {}'.format(list_record))
             
                     i = 0                   
                     while list_record is not None:            
@@ -117,7 +117,7 @@ def getGaugeMeasurement(request, null):
                 lists.pop()                
                 
         except (Exception, psycopg2.DatabaseError) as error:
-            logging.debug(error)
+            logger.debug(error)
         
         finally:
             if connections['osmapi'] is not None:
