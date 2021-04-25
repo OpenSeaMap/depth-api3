@@ -13,10 +13,12 @@ def GetUserInfo(username):
         query = "select {} from user_profiles where user_name='{}'".format(_queryhelper(), username)
         cursor.execute(query)
         db_res = cursor.fetchone()
-        cnt = 0
-        for col_entry in userdb_columns:
-            user[col_entry] = db_res[cnt]
-            cnt += 1
+
+        if db_res is not None:
+            cnt = 0
+            for col_entry in userdb_columns:
+                user[col_entry] = db_res[cnt]
+                cnt += 1
 
     return user
 
