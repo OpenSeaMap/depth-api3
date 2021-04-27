@@ -22,4 +22,5 @@ from . import license
 
 urlpatterns = [
     path('', license.getLicense, name ='getLicense'),
+    path('/bbox', license.getBbox, name ='getBbox'),
 ]
