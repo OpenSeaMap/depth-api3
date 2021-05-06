@@ -15,7 +15,9 @@ Including another URLconf
 """
 from django.urls import path
 from . import logindummy
+from . import nrofusers
 
 urlpatterns = [
-    path('', logindummy.dummy, name ='dummy'),
+    path('/logindummy', logindummy.dummy, name ='dummy'),
+    path('/nrofusers', nrofusers.nrd3u,  name ='nrd3u'),
 ]

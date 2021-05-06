@@ -120,6 +120,8 @@ def getTrack(request):
                         track_Query = ("INSERT INTO user_tracks (track_id, user_name, uploaddate, vesselconfigid , license, file_ref ) VALUES (%s, %s, %s, %s, %s, %s);");
                         cursor.execute(track_Query,(trackid[0], str(request.user), track['uploaddate'], track_data['vesselconfigid'], track_data['license'], track_data['fileName']))
                         connections['osmapi'].commit()                      # Wichtig: commit the changes to the database
+                    else:
+                        raise Exception('No vessel or license defined or found.')
                         
                     logger.debug('Track : stored at {}'.format(dt.now().isoformat()))
 

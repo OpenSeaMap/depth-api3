@@ -15,12 +15,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-from django.conf.urls import *
+#from django.conf.urls import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
-    path('org.osm.depth.upload/api2/auth/logindummy', include('org.osm.depth.upload.api2.auth.urls')),
+    path('org.osm.depth.upload/api2/auth', include('org.osm.depth.upload.api2.auth.urls')),
+    path('org.osm.depth.upload/api2/auth',  include('org.osm.depth.upload.api2.auth.urls')),
     path('org.osm.depth.upload/api2/auth/logout', include('org.osm.depth.upload.api2.auth.logout.urls')),
     path('org.osm.depth.upload/api2/j_security_check', include('org.osm.depth.upload.api2.j_security_check.urls')),
     path('org.osm.depth.upload/api2/license', include('org.osm.depth.upload.api2.license.urls')),

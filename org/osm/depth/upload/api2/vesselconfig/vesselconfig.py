@@ -133,7 +133,7 @@ def getVesselConfig(request):
 
 @csrf_exempt
 @requires_csrf_token
-def createVesselConfigWithNullId(request):
+def createVesselConfigWithNullId(request):                              # POST request
     logger.debug('vesselconfig - createVesselConfigWithNullId: ')
 
     try:
@@ -158,12 +158,12 @@ def createVesselConfigWithNullId(request):
                 return_id = cursor.fetchone()[0]                # get the generated id back
                 connections['osmapi'].commit()                  # Wichtig: commit the changes to the database
 
-                new_vessel_dos = "INSERT INTO depthsensor (vesselconfigid, x, y, z, offsetkeel, manufacturer, model, offsettype, sensorid, frequency, angleofbeam) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);"
+                new_vessel_dos = "INSERT INTO depthsensor (vesselconfigid, y, x, z, offsetkeel, manufacturer, model, offsettype, sensorid, frequency, angleofbeam) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);"
                 cursor.execute(new_vessel_dos, (return_id, depth['distanceFromStern'], depth['distanceFromCenter'], depth['distanceWaterline'], depth['offsetKeel'], depth['manufacturer'], depth['model'], depth['offsetType'], 'nn', '0', '0'))    
                 connections['osmapi'].commit()                  # Wichtig: commit the changes to the database
             
                 sbas['sensorid'] = 'nn'                         # sensorid nicht vom Frontend übergeben -> daher 'nn'
-                new_vessel_sos = "INSERT INTO sbassensor (vesselconfigid, x, y, z, sensorid, manufacturer, model) VALUES (%s,%s,%s,%s,%s,%s,%s);"
+                new_vessel_sos = "INSERT INTO sbassensor (vesselconfigid, y, x, z, sensorid, manufacturer, model) VALUES (%s,%s,%s,%s,%s,%s,%s);"
                 cursor.execute(new_vessel_sos, (return_id, sbas['distanceFromStern'], sbas['distanceFromCenter'], sbas['distanceWaterline'], sbas['sensorid'], sbas['manufacturer'], sbas['model']))
                 connections['osmapi'].commit()                  # Wichtig: commit the changes to the database
 
@@ -203,12 +203,12 @@ def updateVesselConfig(request, vessel_id):
             cursor.execute(new_vessel_sql,(str(vessel_data['name']), str(vessel_data['description']), "None", vessel_data['manufacturer'], vessel_data['model'], vessel_data['loa'], vessel_data['breadth'], vessel_data['draft'], vessel_data['height'], vessel_data['displacement'], vessel_data['maximumspeed'], vessel_data['vesselType'], vessel_id))
             connections['osmapi'].commit()                      # Wichtig: commit the changes to the database
 
-            new_vessel_dos = "UPDATE depthsensor set x=%s, y=%s, z=%s, offsetkeel=%s, manufacturer=%s, model=%s, offsettype=%s where vesselconfigid=%s;"
+            new_vessel_dos = "UPDATE depthsensor set y=%s, x=%s, z=%s, offsetkeel=%s, manufacturer=%s, model=%s, offsettype=%s where vesselconfigid=%s;"
             cursor.execute(new_vessel_dos, (depth['distanceFromStern'], depth['distanceFromCenter'], depth['distanceWaterline'], depth['offsetKeel'], depth['manufacturer'], depth['model'], depth['offsetType'], vessel_id))    
             connections['osmapi'].commit()                      # Wichtig: commit the changes to the database
 
             sbas['sensorid'] = 'nn'                             # sensorid nicht vom Frontend übergeben -> daher 'nn'
-            new_vessel_sos = "UPDATE sbassensor set x=%s, y=%s, z=%s, sensorid=%s, manufacturer=%s, model=%s where vesselconfigid=%s;"
+            new_vessel_sos = "UPDATE sbassensor set y=%s, x=%s, z=%s, sensorid=%s, manufacturer=%s, model=%s where vesselconfigid=%s;"
             cursor.execute(new_vessel_sos, (sbas['distanceFromStern'], sbas['distanceFromCenter'], sbas['distanceWaterline'], sbas['sensorid'], sbas['manufacturer'], sbas['model'], vessel_id))
             connections['osmapi'].commit()                      # Wichtig: commit the changes to the database
 
