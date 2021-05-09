@@ -16,8 +16,10 @@ Including another URLconf
 from django.urls import path
 from . import logindummy
 from . import nrofusers
+from . import nroftrackpoints
 
 urlpatterns = [
     path('/logindummy', logindummy.dummy, name ='dummy'),
     path('/nrofusers', nrofusers.nrd3u,  name ='nrd3u'),
+    path('/nroftrackpoints', nroftrackpoints.nrTP,  name ='nrTP'),
 ]

@@ -10,7 +10,7 @@ from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
 from django.db import connections
 
 import psycopg2
-from psycopg2.extras import DateTimeRange
+#from psycopg2.extras import DateTimeRange
 import json
 import logging
 
@@ -63,7 +63,6 @@ def getVesselConfig(request):
     newsbasoffset = {}
     newdepthoffset = {}
 
-    conn = None
     try:
         with connections['osmapi'].cursor() as cursor:
 
@@ -237,7 +236,7 @@ def deleteVesselConfig(request,del_id):
 
             return_id = cursor.fetchone()[0]                    # get the generated id back
             connections['osmapi'].commit()                      # Wichtig: commit the changes to the database
-#            logger.debug('Der Record {} wurde gelöscht.'.format(return_id)
+            logger.debug('Der Record {} wurde gelöscht.'.format(return_id))
     
     except (Exception, psycopg2.DatabaseError) as error:
         logger.debug(error)
