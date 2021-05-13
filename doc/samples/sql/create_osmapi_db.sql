@@ -33,42 +33,42 @@ CREATE SCHEMA depth_tables;
 ALTER SCHEMA depth_tables OWNER TO postgres;
 
 --
--- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner:
 --
 
 CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
 
 
 --
--- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner:
 --
 
 COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
 --
--- Name: postgis; Type: EXTENSION; Schema: -; Owner: 
+-- Name: postgis; Type: EXTENSION; Schema: -; Owner:
 --
 
 CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA public;
 
 
 --
--- Name: EXTENSION postgis; Type: COMMENT; Schema: -; Owner: 
+-- Name: EXTENSION postgis; Type: COMMENT; Schema: -; Owner:
 --
 
 COMMENT ON EXTENSION postgis IS 'PostGIS geometry, geography, and raster spatial types and functions';
 
 
 --
--- Name: postgres_fdw; Type: EXTENSION; Schema: -; Owner: 
+-- Name: postgres_fdw; Type: EXTENSION; Schema: -; Owner:
 --
 
 CREATE EXTENSION IF NOT EXISTS postgres_fdw WITH SCHEMA public;
 
 
 --
--- Name: EXTENSION postgres_fdw; Type: COMMENT; Schema: -; Owner: 
+-- Name: EXTENSION postgres_fdw; Type: COMMENT; Schema: -; Owner:
 --
 
 COMMENT ON EXTENSION postgres_fdw IS 'foreign-data wrapper for remote PostgreSQL servers';
@@ -123,7 +123,7 @@ begin
 		return;
 	end if;
 	execute 'select last_value from ' || cName into iSeqVal;
-	while iSeqVal < iValue 
+	while iSeqVal < iValue
 	loop
 		iSeqVal := nextval( cName );
 	end loop;
@@ -816,7 +816,7 @@ BEGIN
 	-- the schema column. This needs to be fixed, so we try to
 	-- set the correct schema for each geometry_colums record
 	-- looking at table, column, type and srid.
-	
+
 	return 'This function is obsolete now that geometry_columns is a view';
 
 END;
@@ -2306,7 +2306,7 @@ begin
 		iRplId := 0;
 	end if;
 	insert into depth_tables.rpl_journal_shadow ( select * from depth_fdw.rpl_journal where id > iRplId );
-	
+
 	for recRpl in select * from depth_tables.rpl_journal_shadow where copied is null order by id
 	loop
 		if recRpl.opcode = 'I' then
@@ -2315,7 +2315,7 @@ begin
 			elsif recRpl.table_name = 'user_tracks' then
 				select * into recUtr from depth_fdw.user_tracks where track_id = recRpl.row_id;
 				select user_name into cUser from user_profiles where id = recUtr.upr_id;
-				insert into user_tracks values( 
+				insert into user_tracks values(
 					recUtr.track_id,
 					cUser,
 					recUtr.file_ref,
@@ -2353,7 +2353,7 @@ begin
 				where track_id = recRpl.row_id;
 			elsif recRpl.table_name = 'track_info' then
 				select * into recTif from depth_fdw.track_info where id = recRpl.row_id;
-				update track_info set 
+				update track_info set
 					short_info = recTif.short_info,
 					long_info = recTif.long_info,
 					reprocess = recTif.reprocess,
@@ -2368,12 +2368,12 @@ begin
 		update depth_tables.rpl_journal_shadow set copied = now() where id = recRpl.id;
 		iRows := iRows+1;
 	end loop;
-	
+
 	perform adjustsequence( 'user_tracks_track_id_seq', ( select max( track_id ) from user_tracks ) );
 	perform adjustsequence( 'seq_tif', ( select max( id ) from track_info ) );
-	
+
 	execute 'set session_replication_role = origin';
-	
+
 	return iRows;
 end;
 $$;
@@ -2494,21 +2494,21 @@ declare
 begin
  if tg_op = 'DELETE' then
  if tg_table_name = 'user_tracks' then
- iId := old.track_id; 
+ iId := old.track_id;
  else
- iId := old.id; 
+ iId := old.id;
  end if;
  else
  if tg_table_name = 'user_tracks' then
- iId := new.track_id; 
+ iId := new.track_id;
  else
- iId := new.id; 
+ iId := new.id;
  end if;
  end if;
- 
+
  insert into public.rpl_journal( table_name, row_id, opcode )
 values( tg_table_name, iId, substr( tg_op, 1, 1 ) );
- 
+
  return new;
 end;
 $$;
@@ -2544,7 +2544,7 @@ ALTER FUNCTION public.scale(geometry, double precision, double precision, double
 
 CREATE FUNCTION se_envelopesintersect(geometry, geometry) RETURNS boolean
     LANGUAGE sql IMMUTABLE STRICT
-    AS $_$ 
+    AS $_$
 	SELECT $1 && $2
 	$_$;
 
@@ -4421,73 +4421,70 @@ GRANT SELECT,UPDATE ON SEQUENCE depthsensor_id_seq TO PUBLIC;
 -- Name: depthsensor; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT SELECT,INSERT,UPDATE ON TABLE depthsensor TO osmapi;
+GRANT SELECT,INSERT,UPDATE ON TABLE depthsensor TO admin;
 
 
 --
 -- Name: gauge; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT SELECT,INSERT,UPDATE ON TABLE gauge TO osmapi;
+GRANT SELECT,INSERT,UPDATE ON TABLE gauge TO admin;
 
 
 --
 -- Name: gaugemeasurement; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT SELECT,INSERT,UPDATE ON TABLE gaugemeasurement TO osmapi;
+GRANT SELECT,INSERT,UPDATE ON TABLE gaugemeasurement TO admin;
 
 
 --
 -- Name: geography_columns; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT SELECT,INSERT,UPDATE ON TABLE geography_columns TO osmapi;
+GRANT SELECT,INSERT,UPDATE ON TABLE geography_columns TO admin;
 
 
 --
 -- Name: geometry_columns; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT SELECT,INSERT,UPDATE ON TABLE geometry_columns TO osmapi;
+GRANT SELECT,INSERT,UPDATE ON TABLE geometry_columns TO admin;
 
 
 --
 -- Name: license; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT SELECT,INSERT,UPDATE ON TABLE license TO osmapi;
+GRANT SELECT,INSERT,UPDATE ON TABLE license TO admin;
 
 
 --
 -- Name: raster_columns; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT SELECT,INSERT,UPDATE ON TABLE raster_columns TO osmapi;
+GRANT SELECT,INSERT,UPDATE ON TABLE raster_columns TO admin;
 
 
 --
 -- Name: raster_overviews; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT SELECT,INSERT,UPDATE ON TABLE raster_overviews TO osmapi;
+GRANT SELECT,INSERT,UPDATE ON TABLE raster_overviews TO admin;
 
 
 --
 -- Name: repl_id_seq; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT SELECT,UPDATE ON SEQUENCE repl_id_seq TO osmapi;
-GRANT SELECT,UPDATE ON SEQUENCE repl_id_seq TO osm;
+GRANT SELECT,UPDATE ON SEQUENCE repl_id_seq TO admin;
 
 
 --
 -- Name: rpl_journal; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT SELECT,INSERT ON TABLE rpl_journal TO osmapi;
-GRANT SELECT,INSERT ON TABLE rpl_journal TO osm;
-
+GRANT SELECT,INSERT ON TABLE rpl_journal TO admin;
 
 --
 -- Name: sbassensor_id_seq; Type: ACL; Schema: public; Owner: postgres
@@ -4500,37 +4497,34 @@ GRANT SELECT,UPDATE ON SEQUENCE sbassensor_id_seq TO PUBLIC;
 -- Name: sbassensor; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT SELECT,INSERT,UPDATE ON TABLE sbassensor TO osmapi;
+GRANT SELECT,INSERT,UPDATE ON TABLE sbassensor TO admin;
 
 
 --
 -- Name: seq_tif; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT SELECT,UPDATE ON SEQUENCE seq_tif TO osmapi;
-GRANT SELECT,UPDATE ON SEQUENCE seq_tif TO osm;
-
+GRANT SELECT,UPDATE ON SEQUENCE seq_tif TO admin;
 
 --
 -- Name: spatial_ref_sys; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT SELECT,INSERT,UPDATE ON TABLE spatial_ref_sys TO osmapi;
+GRANT SELECT,INSERT,UPDATE ON TABLE spatial_ref_sys TO admin;
 
 
 --
 -- Name: track_info; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON TABLE track_info TO osm;
-GRANT ALL ON TABLE track_info TO osmapi;
+GRANT ALL ON TABLE track_info TO admin;
 
 
 --
 -- Name: trackgauges; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT SELECT,INSERT,UPDATE ON TABLE trackgauges TO osmapi;
+GRANT SELECT,INSERT,UPDATE ON TABLE trackgauges TO admin;
 
 
 --
@@ -4544,29 +4538,27 @@ GRANT ALL ON SEQUENCE user_profiles_id_seq TO PUBLIC;
 -- Name: user_profiles; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT SELECT,INSERT,UPDATE ON TABLE user_profiles TO osmapi;
+GRANT SELECT,INSERT,UPDATE ON TABLE user_profiles TO admin;
 
 
 --
 -- Name: user_tracks_track_id_seq; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON SEQUENCE user_tracks_track_id_seq TO osmapi;
-GRANT ALL ON SEQUENCE user_tracks_track_id_seq TO osm;
-
+GRANT ALL ON SEQUENCE user_tracks_track_id_seq TO admin;
 
 --
 -- Name: user_tracks; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE user_tracks TO osmapi;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE user_tracks TO admin;
 
 
 --
 -- Name: userroles; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT SELECT,INSERT,UPDATE ON TABLE userroles TO osmapi;
+GRANT SELECT,INSERT,UPDATE ON TABLE userroles TO admin;
 
 
 --
@@ -4580,17 +4572,16 @@ GRANT SELECT ON TABLE v_user_tracks TO PUBLIC;
 -- Name: vesselconfiguration; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT SELECT,INSERT,UPDATE ON TABLE vesselconfiguration TO osmapi;
+GRANT SELECT,INSERT,UPDATE ON TABLE vesselconfiguration TO admin;
 
 
 --
 -- Name: vesselconfiguration_id_seq; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT SELECT,UPDATE ON SEQUENCE vesselconfiguration_id_seq TO osmapi;
+GRANT SELECT,UPDATE ON SEQUENCE vesselconfiguration_id_seq TO admin;
 
 
 --
 -- PostgreSQL database dump complete
 --
-
