@@ -1,0 +1,69 @@
+version: '3.1'
+
+services:
+
+  postgis:
+    image: postgis:2.3
+    hostname: osmapi-postgis
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - ../doc/samples/sql:/transfer
+      - ./volumes/postgis/data:/var/lib/postgresql/data
+    networks:
+      db:
+      docker_dmz:
+    ports:
+      - 5442:5432
+    command: run
+
+  osmapi:
+    image: osmapi:2.5
+    hostname: osmapi
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - DEBUG=${DEBUG}
+      - SECRET_KEY=${SECRET_KEY}
+      - DB_ENGINE=${DB_ENGINE}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_OSMAPI_ENGINE=${DB_OSMAPI_ENGINE}
+      - DB_OSMAPI_NAME=${DB_OSMAPI_NAME}
+      - DB_OSMAPI_USER=${DB_OSMAPI_USER}
+      - DB_OSMAPI_PASSWORD=${DB_OSMAPI_PASSWORD}
+      - DB_OSMAPI_HOST=${DB_OSMAPI_HOST}
+      - DB_OSMAPI_PORT=${DB_OSMAPI_PORT}
+      - DB_DEPTH_ENGINE=${DB_DEPTH_ENGINE}
+      - DB_DEPTH_NAME=${DB_DEPTH_NAME}
+      - DB_DEPTH_USER=${DB_DEPTH_USER}
+      - DB_DEPTH_PASSWORD=${DB_DEPTH_PASSWORD}
+      - DB_DEPTH_HOST=${DB_DEPTH_HOST}
+      - DB_DEPTH_PORT=${DB_DEPTH_PORT}
+      - EMAIL_BACKEND=${EMAIL_BACKEND}
+      - EMAIL_HOST=${EMAIL_HOST}
+      - EMAIL_PORT=${EMAIL_PORT}
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
+      - UPLOAD_PATH=${UPLOAD_PATH}
+      - LOGFILENAME=${LOGFILENAME}
+    volumes:
+      - ./volumes/osmapi/data:/data
+    networks:
+      db:
+      docker_dmz:
+    ports:
+      - 4040:8000
+    command: run
+
+# Custom network so all services can communicate using a FQDN
+networks:
+  db:
+  docker_dmz:
+    external: true
