@@ -3,3 +3,4 @@
 .project
 .pydevproject
 ./depth3/.env
+./docker/volumes/*
