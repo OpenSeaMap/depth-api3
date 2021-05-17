@@ -54,54 +54,35 @@ the following command install all required libraries
 pip3 install --no-cache-dir -r requirements.txt
 ```
 
-# create initial database database
-## django sb
+# initial setup of databases
 
-# generate databases
+## open shell in database docker container
 
-## general 
+assumtion: 
+the user with 
+ name="admin" 
+ pass="admin" 
+ and persmissions to create databases 
+is configured in database.
+
+enter following commands
 ```
 # osmapi data (taken over from api2 project)
-sudo -u postgres createdb -E UTF8 -O admin osmapi -T template0
+sudo -u postgres createdb -E UTF8 -O admin django-db -T template0
 
 # for django
-sudo -u postgres createdb -E UTF8 -O admin osmapi_2.5 -T template0
+sudo -u postgres createdb -E UTF8 -O admin osmapi-db -T template0
 
 # depth data (taken over from api2 project)
-sudo -u postgres createdb -E UTF8 -O admin depth -T template0
+sudo -u postgres createdb -E UTF8 -O admin depth-db -T template0
 ```
 
-## import database schema for osmapi
+# import database schema
 ```
-sudo -u postgres psql -d osmapi -c "CREATE EXTENSION postgis;"
-sudo -u postgres psql -h localhost -p 5432 -U admin -d osmapi -f /transfer/create_schema.sql
-sudo -u postgres psql -d osmapi -c "GRANT ALL ON TABLE public.depthsensor TO admin;"
-sudo -u postgres psql -d osmapi -c "GRANT ALL ON TABLE public.gauge TO admin;"
-sudo -u postgres psql -d osmapi -c "GRANT ALL ON TABLE public.gaugemeasurement TO admin;"
-sudo -u postgres psql -d osmapi -c "GRANT ALL ON TABLE public.license TO admin;"
-sudo -u postgres psql -d osmapi -c "GRANT ALL ON TABLE public.rpl_journal TO admin;"
-sudo -u postgres psql -d osmapi -c "GRANT ALL ON TABLE public.sbassensor TO admin;"
-sudo -u postgres psql -d osmapi -c "GRANT ALL ON TABLE public.spatial_ref_sys TO admin;"
-sudo -u postgres psql -d osmapi -c "GRANT ALL ON TABLE public.track_info TO admin;"
-sudo -u postgres psql -d osmapi -c "GRANT ALL ON TABLE public.trackgauges TO admin;"
-sudo -u postgres psql -d osmapi -c "GRANT ALL ON TABLE public.user_profiles TO admin;"
-sudo -u postgres psql -d osmapi -c "GRANT ALL ON TABLE public.user_tracks TO admin;"
-sudo -u postgres psql -d osmapi -c "GRANT ALL ON TABLE public.userroles TO admin;"
-sudo -u postgres psql -d osmapi -c "GRANT ALL ON TABLE public.vesselconfiguration TO admin;"
-
-sudo -u postgres psql -d osmapi -c "GRANT ALL ON TABLE public.depthsensor_id_seq OWNER TO admin;"
-sudo -u postgres psql -d osmapi -c "GRANT ALL ON TABLE public.gauge_id_seq OWNER TO admin;"
-sudo -u postgres psql -d osmapi -c "GRANT ALL ON TABLE public.license_id_seq OWNER TO admin;"
-sudo -u postgres psql -d osmapi -c "GRANT ALL ON TABLE public.repl_id_seq OWNER TO admin;"
-sudo -u postgres psql -d osmapi -c "GRANT ALL ON TABLE public.sbassensor_id_seq OWNER TO admin;"
-sudo -u postgres psql -d osmapi -c "GRANT ALL ON TABLE public.trackgauges_id_seq OWNER TO admin;"
-sudo -u postgres psql -d osmapi -c "GRANT ALL ON TABLE public.user_profiles_id_seq OWNER TO admin;"
-sudo -u postgres psql -d osmapi -c "GRANT ALL ON TABLE public.user_tracks_track_id_seq OWNER TO admin;"
-sudo -u postgres psql -d osmapi -c "GRANT ALL ON TABLE public.vesselconfiguration_id_seq OWNER TO admin;"
-
-
+sudo -u postgres psql -c "ALTER USER admin WITH SUPERUSER;"
+sudo -u postgres psql -d osmapi-db -c "CREATE EXTENSION postgis;"
+sudo -u postgres psql -h localhost -p 5432 -U admin -d osmapi-db -f /transfer/create_osmapi_db.sql
 ```
-
 
 
 # Test
