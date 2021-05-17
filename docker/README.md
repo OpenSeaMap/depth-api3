@@ -31,7 +31,6 @@ sudo -u postgres createdb -E UTF8 -O admin depth-db -T template0
 # import database schema
 ```
 sudo -u postgres psql -c "ALTER USER admin WITH SUPERUSER;"
-sudo -u postgres createdb -E UTF8 -O admin osmapi-db -T template0
 sudo -u postgres psql -d osmapi-db -c "CREATE EXTENSION postgis;"
 sudo -u postgres psql -h localhost -p 5432 -U admin -d osmapi-db -f /transfer/create_osmapi_db.sql
 ```
