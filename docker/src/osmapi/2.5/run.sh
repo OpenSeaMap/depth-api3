@@ -69,6 +69,7 @@ if [ "$1" = "run" ]; then
     gen_env
 
     # start server
+	cd /data/depth-api3
     python3 manage.py runserver 0.0.0.0:8000
 
     echo "wait for terminate signal"

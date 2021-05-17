@@ -55,6 +55,7 @@ services:
       - LOGFILENAME=${LOGFILENAME}
     volumes:
       - ./..:/data/depth-api3
+      - ./volumes/osmapi/log:/data/log
     networks:
       db:
       docker_dmz:
