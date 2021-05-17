@@ -52,28 +52,6 @@ function gen_env(){
 	echo ""                                                                >> $ENV_FILE
 	echo "UPLOAD_PATH=$UPLOAD_PATH"                                        >> $ENV_FILE
   echo "LOGFILENAME=$LOGFILENAME"                                        >> $ENV_FILE
-
-}
-
-function get_sources(){
-  cd $SRC_DIR
-
-  if [[ ! -e $PRJ_DIR ]]; then
-    git clone --recurse-submodules https://github.com/OpenSeaMap/depth-api3.git
-    cd $PRJ_DIR
-    git checkout osmapi_2.5
-    git submodule init
-    git submodule update
-  fi
-
-  cd $PRJ_DIR
-  git fetch --all
-  git status
-  git pull
-
-  # install required libraries
-  cd $PRJ_DIR
-  pip3 install --no-cache-dir -r requirements.txt
 }
 
 if [ "$#" -ne 1 ]; then
@@ -88,7 +66,6 @@ if [ "$1" = "run" ]; then
     trap 'sighandler_TERM' 15
 
     # prepare start of server
-    get_sources
     gen_env
 
     # start server

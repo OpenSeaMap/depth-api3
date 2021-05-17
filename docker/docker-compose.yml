@@ -54,7 +54,7 @@ services:
       - UPLOAD_PATH=${UPLOAD_PATH}
       - LOGFILENAME=${LOGFILENAME}
     volumes:
-      - ./volumes/osmapi/data:/data
+      - ./..:/data/depth-api3
     networks:
       db:
       docker_dmz:
