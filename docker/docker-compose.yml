@@ -61,6 +61,8 @@ services:
       docker_dmz:
     ports:
       - 4040:8000
+    depends_on:
+        - "postgis"
     command: run
 
 # Custom network so all services can communicate using a FQDN
