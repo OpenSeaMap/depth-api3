@@ -22,7 +22,7 @@ def nrTP (request):
         with connections['depth'].cursor() as cursor:
 
             if request.user.is_authenticated:
-                Query = ("select count (gid) from trackpoints_raw_render_22;")
+                Query = ("select count (gid) from trackpoints_raw_filter_16;")
                 cursor.execute(str(Query))
                 db_count = cursor.fetchone()
                 logger.debug('statistic - number of Track Points: {}'.format(db_count[0]))
