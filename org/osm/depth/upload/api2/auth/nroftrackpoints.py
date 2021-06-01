@@ -15,19 +15,21 @@ import logging
 logger = logging.getLogger(__name__)
 
 def nrTP (request):
-     
+
     logger.debug('statistic: Track Points')
 
     try:
         with connections['depth'].cursor() as cursor:
 
-            if request.user.is_authenticated:
+#            if request.user.is_authenticated:
+## this solution will take to much time waiting for the DB
+## will see to find something better in the future 
                 Query = ("select count (gid) from trackpoints_raw_filter_16;")
-                cursor.execute(str(Query))
-                db_count = cursor.fetchone()
-                logger.debug('statistic - number of Track Points: {}'.format(db_count[0]))
-            else:
-                logger.debug('statistic - Users Count: no data')
+#                cursor.execute(str(Query))
+#                db_count = cursor.fetchone()
+#                logger.debug('statistic - number of Track Points: {}'.format(db_count[0]))
+#            else:
+#                logger.debug('statistic - Users Count: no data')
             
     except (Exception, psycopg2.DatabaseError) as error:
         logger.debug(error)
@@ -37,5 +39,6 @@ def nrTP (request):
             connections['depth'].close()
             
         HttpResponse.status_code = 200
-    return HttpResponse(to_decimal_string(str(db_count[0])))
+#    return HttpResponse(to_decimal_string(str(db_count[0])))
+    return HttpResponse(to_decimal_string('90421357'))        # number of track-points at 2021-06-01
 
