@@ -3,7 +3,7 @@
 
 ## clone project with submodules
 ```
-git clone --recurse-submodules https://github.com/wldlzi/depth-api2.git
+git clone --recurse-submodules git@github.com:OpenSeaMap/depth-api3.git
 ```
 
 ## configuration / settings
@@ -86,4 +86,4 @@ sudo -u postgres psql -h localhost -p 5432 -U admin -d osmapi-db -f /transfer/cr
 
 
 # Test
-http://localhost:8003/static/local_index.html
+http://localhost:4040/
