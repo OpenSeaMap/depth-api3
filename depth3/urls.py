@@ -16,9 +16,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from org.index import index
+from org.info import info
 
 urlpatterns = [
     path('', index),
+    path('info/', info),
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
     path('org.osm.depth.upload/api2/auth', include('org.osm.depth.upload.api2.auth.urls')),
