@@ -22,12 +22,12 @@ environ.Env.read_env()  # reading .env file
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-STATIC_DIR = os.path.join(BASE_DIR, 'Frontend-to-depth3/')
+STATIC_DIR = os.path.join(BASE_DIR, 'Frontend-to-depth3/src/')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', default=False)
 
-# Quick-start development settings - unsuitable for production
+# Quick-mysite development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 SECRET_KEY = env.str('SECRET_KEY')
@@ -172,7 +172,7 @@ LOGGING = {
             'class': 'logging.StreamHandler',
         },
         'file': {
-            'level': 'DEBUG',
+            'level': 'ERROR',
             'class': 'logging.FileHandler',
             'filename': LOGFILENAME,
         },
@@ -180,7 +180,7 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['file'],
-            'level': 'DEBUG',
+            'level': 'ERROR',
             'propagate': True,
         },
     },
