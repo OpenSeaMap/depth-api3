@@ -23,6 +23,9 @@ RUN    apt-get update \
     python3-dev
 
 COPY requirements.txt /
+
+RUN python3 -m pip install pip==19.3.1
+
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Start running
