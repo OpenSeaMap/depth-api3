@@ -1,5 +1,7 @@
 *.sqlite3
 *.pyc
+*.dat
+*.log
 .project
 .pydevproject
 .env
