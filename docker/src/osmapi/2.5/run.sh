@@ -57,7 +57,8 @@ function gen_env(){
 if [ "$#" -ne 1 ]; then
     echo "usage: <run>"
     echo "commands:"
-    echo "    run: Runs Geoserver"
+    echo "    run: Run Django"
+    echo "migrate: Migrate Dajngo Model"
     exit 1
 fi
 
@@ -76,6 +77,20 @@ if [ "$1" = "run" ]; then
     while [  "$STOP_CONT" = "no"  ] ; do
       sleep 1
     done
+
+    exit 0
+fi
+
+if [ "$1" = "migrate" ]; then
+    # add handler for signal SIHTERM
+    trap 'sighandler_TERM' 15
+
+    # prepare start of server
+    gen_env
+
+    # start server
+	cd /data/depth-api3
+    python3 manage.py migrate
 
     exit 0
 fi
